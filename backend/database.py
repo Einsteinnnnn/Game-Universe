@@ -1,21 +1,18 @@
 import mysql.connector
 from mysql.connector import Error
 
-NETID = 'liyi3'
 
 class MyDatabase:
-
     host_name = "34.70.44.148"
     database_name = "project"
 
     def __init__(self, username, password):
         self.username = username
         self.password = password
-        self.connetion = None
+        self.connection = None
         self.create_connection()
 
     def create_connection(self):
-        connection = None
         try:
             connection = mysql.connector.connect(
                 host=MyDatabase.host_name,
@@ -25,7 +22,7 @@ class MyDatabase:
             )
             print("Connection to MySQL DB successful")
         except Error as e:
-            print(f"The error '{e}' occurred")
+            return False
 
         self.connection = connection
 
@@ -34,16 +31,17 @@ class MyDatabase:
         try:
             cursor.execute(query)
             self.connection.commit()
-            print("Query executed successfully")
+            return True
         except Error as e:
-            print(f"The error '{e}' occurred")
+            print(f"Database execute error: '{e}'")
+            return False
 
     def query(self, query):
         cursor = self.connection.cursor()
-        result = None
         try:
             cursor.execute(query)
             result = cursor.fetchall()
             return result
         except Error as e:
-            print(f"The error '{e}' occurred")
+            print(f"Database query error: '{e}'")
+            return False
