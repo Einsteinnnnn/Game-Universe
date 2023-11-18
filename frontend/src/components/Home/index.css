@@ -1,0 +1,11 @@
+.Home{
+    padding-top: 150px;
+    z-index: 0;
+}
+.home-search{
+    margin-left: 20%;
+    margin-right: 20%;
+}
+.home-trending{
+    margin-top: 80px;
+}

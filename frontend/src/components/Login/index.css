@@ -1,0 +1,17 @@
+.Login{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 90vh;
+}
+.register-button{
+    color:#ccc;
+    cursor: pointer;
+    font-size: 14px;
+    user-select:'none';
+    transition: all 0.2s ease-in-out;
+}
+.register-button:hover{
+    color: #fff;
+}

@@ -1,0 +1,19 @@
+.Detail{
+    padding-top: 150px;
+    z-index: 0;
+}
+.detail-game{
+    margin-left: 20%;
+    margin-right: 10%;
+}
+.detail-game-description-row{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-top: 5px;
+}
+.detail-game-image{
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}

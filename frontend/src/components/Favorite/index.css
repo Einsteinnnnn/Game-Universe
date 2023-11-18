@@ -1,0 +1,9 @@
+.Favorite{
+    padding-top: 100px;
+    z-index: 0;
+}
+.Favorite-list{
+    margin-top: 30px;
+    padding-left: 20%;
+    padding-right: 20%;
+}
