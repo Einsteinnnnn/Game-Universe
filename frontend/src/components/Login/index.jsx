@@ -2,8 +2,21 @@ import React from 'react';
 import './index.css';
 import { Card, Form, Input, Button } from 'antd';
 import { UserOutlined, KeyOutlined } from '@ant-design/icons';
+import backend from '../../backend';
+import apis from '../../api';
+import { handleResponse } from '../../utils';
 
 function Login({currentPage, setCurrentPage}) {
+
+    const login = (values) => {
+        const handleLogin = (response) => {
+            if (handleResponse(response)) {
+                window.location.reload();
+            }
+        }
+        backend.request(apis.login, values, handleLogin);
+    }
+
     return (
         <div className='Login'>
             <svg width="300" height="52" xmlns="http://www.w3.org/2000/svg" onClick={() => { window.location.reload() }} style={{ userSelect: 'none', cursor: 'pointer' }}>
@@ -31,6 +44,7 @@ function Login({currentPage, setCurrentPage}) {
                         remember: true,
                     }}
                     autoComplete="off"
+                    onFinish={(values) => {login(values)}}
                 >
                     <div style={{marginBottom:'10px'}}>
                         Username

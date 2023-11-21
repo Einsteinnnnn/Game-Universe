@@ -47,33 +47,29 @@ class MyDatabase:
             return False
         
     def user_login(self, un, pw):
-        q = "SELECT * FROM User_info WHERE username = {} AND password = {}".format(un, pw)
-        result = query(q)
-        if result:
-            print("Login success")
-        else:
-            print("Login fail")
-        return True
+        q = "SELECT * FROM Userinfo WHERE username = '{}' AND password = '{}'".format(un, pw)
+        print(q)
+        return self.query(q)
     
     def username_check(self, un):
-        q  = "SELECT * FROM User_info WHERE username = {}".format(un)
-        result = query(q)
+        q = "SELECT * FROM Userinfo WHERE username = {}".format(un)
+        result = self.query(q)
         if result:
             return False
         else:
             return True
 
     def valid_userid(self):
-        q = "SELECT COUNT(*) FROM User_info"
+        q = "SELECT COUNT(*) FROM Userinfo"
         return self.query(q)
 
     def user_register(self, un, pw, email, phonenum):
         userid = self.valid_userid()
-        q = "INSERT INTO User_info VALUES({},{},{},{},{})".format(userid, un, pw, email, phonenum)
+        q = "INSERT INTO Userinfo VALUES({},{},{},{},{})".format(userid, un, pw, email, phonenum)
         return self.query(q)
     
     def search_by_keyword(self, keyword):
-        q  = "SELECT * FROM Game_info WHERE queryname LIKE '%{}%'".format(keyword)
+        q  = "SELECT * FROM Gameinfo WHERE queryname LIKE '%{}%'".format(keyword)
         return self.query(q)
 
     def add_review(self, userid, gameid, review):
