@@ -10,10 +10,34 @@ const apis = {
         url: '/login',
         method: 'post',
         mock: {
-            status: 'error',
-            message: 'Login failed',
+            status: 'ok',
         },
-        enableMock: true
+        enableMock: false
+    },
+    logout: {
+        url: '/logout',
+        method: 'post',
+        mock: {
+            status: 'ok',
+        },
+        enableMock: false
+    },
+    userInfo: {
+        url: '/user',
+        method: 'get',
+        mock: {
+            status: 'ok',
+            data: 'hha',
+        },
+        enableMock: false,
+    },
+    register: {
+        url: '/register',
+        method: 'post',
+        mock: {
+            status: 'ok',
+        },
+        enableMock: false,
     },
 }
 

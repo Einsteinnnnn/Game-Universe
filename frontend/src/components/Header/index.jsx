@@ -1,15 +1,29 @@
 import React from 'react';
-import { Dropdown, Menu, Typography, Button, theme, Divider } from 'antd';
-import { UserOutlined, HomeOutlined, HeartOutlined, SearchOutlined } from '@ant-design/icons';
+import { Dropdown, Menu, Typography, Button, theme, Divider, Tooltip } from 'antd';
+import { UserOutlined, HomeOutlined, HeartOutlined, SearchOutlined, LogoutOutlined } from '@ant-design/icons';
+import backend from '../../backend';
+import apis from '../../api';
 import './index.css';
+import { handleResponse, loading, success } from '../../utils';
 
 const { useToken } = theme;
 
 
-function Header({ currentPage, setCurrentPage }) {
+function Header({ currentPage, setCurrentPage, user }) {
+
     const onClick = (e) => {
         setCurrentPage(e.key);
     };
+
+    const logout = () => { 
+        loading();
+        backend.request(apis.logout, {}, (response) => {
+            if (handleResponse(response)) {
+                success('Logged out');
+                window.location.reload();
+            }
+        })
+    }
 
     const items = [
         {
@@ -19,9 +33,13 @@ function Header({ currentPage, setCurrentPage }) {
         },
         {
             label: (<div onClick={() => setCurrentPage('favorite')}><Typography.Text strong style={{ fontSize: '17px' }}>Favorite Games</Typography.Text></div>),
-            // label: <Typography.Text strong style={{ fontSize: '17px' }}>Favorite Games</Typography.Text>,
             key: 'myFavorites',
             icon: <HeartOutlined />
+        },
+        {
+            label: (<div onClick={() => logout()}><Typography.Text strong style={{ fontSize: '17px' }}>Logout</Typography.Text></div>),
+            key: 'myLogout',
+            icon: <LogoutOutlined />
         }
     ];
 
@@ -55,32 +73,40 @@ function Header({ currentPage, setCurrentPage }) {
                 <svg viewBox="0 0 300 52" width="225" height="39" xmlns="http://www.w3.org/2000/svg" onClick={() => { window.location.reload() }} style={{ userSelect: 'none', cursor: 'pointer' }}>
                     <g>
                         <title>GameUniverse</title>
-                        <rect stroke="#bad3ff" stroke-width="2" fill-opacity="0" id="svg_1" height="44.08163" width="294.28572" y="3.2653" x="3.26531" fill="#c0d4f7" />
-                        <text text-anchor="start" font-family="'Open Sans'" font-size="44" id="svg_2" y="40.40816" x="10.61224" stroke-width="0" stroke="#000" fill="#87a1d0">G</text>
-                        <text text-anchor="start" font-family="'Open Sans'" font-size="40" id="svg_3" y="41.22449" x="154.69387" stroke-width="0" stroke="#000" fill="#eaf2ff">niverse</text>
-                        <text text-anchor="start" font-family="'Open Sans'" font-size="44" id="svg_4" y="42.04081" x="124.89796" stroke-width="0" stroke="#000" fill="#87a1d0">U</text>
-                        <text text-anchor="start" font-family="'Open Sans'" font-size="40" id="svg_5" y="40.40816" x="42.85714" stroke-width="0" stroke="#000" fill="#eff5ff">ame</text>
+                        <rect stroke="#bad3ff" strokeWidth="2" fillOpacity="0" id="svg_1" height="44.08163" width="294.28572" y="3.2653" x="3.26531" fill="#c0d4f7" />
+                        <text textAnchor="start" fontFamily="'Open Sans'" fontSize="44" id="svg_2" y="40.40816" x="10.61224" strokeWidth="0" stroke="#000" fill="#87a1d0">G</text>
+                        <text textAnchor="start" fontFamily="'Open Sans'" fontSize="40" id="svg_3" y="41.22449" x="154.69387" strokeWidth="0" stroke="#000" fill="#eaf2ff">niverse</text>
+                        <text textAnchor="start" fontFamily="'Open Sans'" fontSize="44" id="svg_4" y="42.04081" x="124.89796" strokeWidth="0" stroke="#000" fill="#87a1d0">U</text>
+                        <text textAnchor="start" fontFamily="'Open Sans'" fontSize="40" id="svg_5" y="40.40816" x="42.85714" strokeWidth="0" stroke="#000" fill="#eff5ff">ame</text>
                     </g>
                 </svg>
                 <div style={{ display: 'flex', minWidth: '50%', justifyContent: 'flex-end' }}>
                     <div style={{ marginTop: '0px' }}>
                         <Menu onClick={onClick} selectedKeys={[currentPage]} mode="horizontal" items={headerItems} />
                     </div>
-                    <Dropdown menu={{ items }}
-                        dropdownRender={(menu) => (
-                            <div style={contentStyle}>
-                                <Typography.Text style={{ marginBottom: '0px', marginLeft: '15px' }}>Welcome back,</Typography.Text>
-                                <Typography.Title style={{ marginTop: '0px', marginLeft: '15px' }} level={5} >User</Typography.Title>
-                                <Divider style={{ margin: '4px 0' }} />
-                                {React.cloneElement(menu, {
-                                    style: menuStyle,
-                                })}
-                            </div>
-                        )}>
-                        <div>
-                            <Button onClick={() => { setCurrentPage('login') }} type="primary" icon={<UserOutlined />} shape='circle' style={{ marginLeft: '50px', marginTop: '2px' }}></Button>
-                        </div>
-                    </Dropdown>
+                    {user ?
+                        <>
+                            <Dropdown menu={{ items }}
+                                dropdownRender={(menu) => (
+                                    <div style={contentStyle}>
+                                        <Typography.Text style={{ marginBottom: '0px', marginLeft: '15px' }}>Welcome back,</Typography.Text>
+                                        <Typography.Title style={{ marginTop: '0px', marginLeft: '15px' }} level={5} >{user.username}</Typography.Title>
+                                        <Divider style={{ margin: '4px 0' }} />
+                                        {React.cloneElement(menu, {
+                                            style: menuStyle,
+                                        })}
+                                    </div>
+                                )}>
+                                <div>
+                                    <Button onClick={() => { setCurrentPage('home') }} type="primary" icon={<UserOutlined />} shape='circle' style={{ marginLeft: '50px', marginTop: '2px' }}></Button>
+                                </div>
+                            </Dropdown>
+                        </> :
+                        <>
+                            <Tooltip title="Click on to login">
+                                <Button onClick={() => { setCurrentPage('login') }} type="primary" icon={<UserOutlined />} shape='circle' style={{ backgroundColor: '#ccc', marginLeft: '50px', marginTop: '2px' }}></Button>
+                            </Tooltip>
+                        </>}
                 </div>
             </div>
         </div>

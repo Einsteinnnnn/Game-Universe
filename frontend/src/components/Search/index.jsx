@@ -21,7 +21,7 @@ const IconText = ({ icon, text }) => (
     </Space>
 );
 
-function Search({currentPage, setCurrentPage}) {
+function Search({currentPage, setCurrentPage, user}) {
 
     const [advancedSearch, setAdvancedSearch] = React.useState(false);
 

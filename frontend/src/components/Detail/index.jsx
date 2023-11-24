@@ -70,7 +70,7 @@ const gameDataList = Object.keys(gameData).map((key) => ({
 }));
 
 
-const Detail = ({ currentPage, setCurrentPage }) => {
+const Detail = ({ currentPage, setCurrentPage, user }) => {
     return (
         <div className='Detail'>
             <Row>

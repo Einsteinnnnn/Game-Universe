@@ -3,7 +3,7 @@ import './index.css';
 import { List, Avatar, Button, Typography } from 'antd';
 
 
-const Favorite = ({currentPage, setCurrentPage}) => {
+const Favorite = ({currentPage, setCurrentPage, user}) => {
     const list = [
         {
             "gender": "female",

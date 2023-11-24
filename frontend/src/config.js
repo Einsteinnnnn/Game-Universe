@@ -1,4 +1,4 @@
-export const env = 'prod';
+export const env = 'dev';
 
 const allConfig = {
     dev: {

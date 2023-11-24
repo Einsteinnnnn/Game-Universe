@@ -10,7 +10,7 @@ app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 if len(sys.argv) < 2:
     sys.exit('Include netid as database username. Usage: $ python app.py [netid]')
 my_database = MyDatabase(username=sys.argv[1], password='123456')
-if my_database.connection is None:
+if not my_database.is_connected():
     sys.exit('Failed to connect to database. Check your username and password.')
 
 
@@ -39,6 +39,39 @@ def login():
 def logout():
     session.pop('username', None)
     return {'status': 'ok'}
+
+
+@app.route('/api/user', methods=['GET'])
+def user_info():
+    if 'username' not in session:
+        return {'status': 'error', 'message': 'Login required.'}
+    username = session['username']
+    result = my_database.username_check(username)
+    print(result)
+    if result:
+        return {'status': 'ok', 'data': result}
+    else:
+        return {'status': 'error', 'message': 'Invalid username.'}
+    
+
+@app.route('/api/register', methods=['POST'])
+def register():
+    post_data = request.get_json()
+    try:
+        username = post_data['username']
+        password = post_data['password']
+        email = post_data['email']
+        phone = post_data['phone']
+    except KeyError:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    check = my_database.username_check(username)
+    if check:
+        return {'status': 'error', 'message': 'Username already exists.'}
+    else:
+        if my_database.user_register(username, password, email, phone):
+            return {'status': 'ok'}
+        else:
+            return {'status': 'error', 'message': 'Failed to register.'}
 
 
 if __name__ == '__main__':

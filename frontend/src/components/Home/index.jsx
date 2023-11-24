@@ -20,7 +20,7 @@ const trendingData = Array.from({ length: 20 }).map((_, i) => ({
     </Space>
   );
 
-function Home({currentPage, setCurrentPage}) {
+function Home({currentPage, setCurrentPage, user}) {
     return (
         <div className='Home'>
             <div className='home-search'>

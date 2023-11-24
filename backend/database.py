@@ -1,72 +1,83 @@
-import mysql.connector
-from mysql.connector import Error
+from mysql.connector import Error, pooling
 
 
 class MyDatabase:
     host_name = "34.70.44.148"
     database_name = "project"
+    pool_size = 5
+    _pool = None
 
     def __init__(self, username, password):
         self.username = username
         self.password = password
         self.connection = None
-        self.create_connection()
+        if MyDatabase._pool is None:
+            self._create_pool()
 
-    def create_connection(self):
-        try:
-            connection = mysql.connector.connect(
-                host=MyDatabase.host_name,
-                user=self.username,
-                passwd=self.password,
-                database=MyDatabase.database_name
-            )
-            print("Connection to MySQL DB successful")
-        except Error as e:
+    def _create_pool(self):
+        MyDatabase._pool = pooling.MySQLConnectionPool(
+            pool_name="pool",
+            pool_size=MyDatabase.pool_size,
+            host=MyDatabase.host_name,
+            user=self.username,
+            password=self.password,
+            database=MyDatabase.database_name
+        )
+
+    @staticmethod
+    def is_connected():
+        if MyDatabase._pool:
+            return True
+        else:
             return False
 
-        self.connection = connection
-
-    def execute(self, query):
-        cursor = self.connection.cursor()
+    @staticmethod
+    def execute(s):
+        connection = MyDatabase._pool.get_connection()
+        cursor = connection.cursor()
         try:
-            cursor.execute(query)
-            self.connection.commit()
-            return True
+            cursor.execute(s)
+            connection.commit()
+            result = True
         except Error as e:
             print(f"Database execute error: '{e}'")
-            return False
+            result = False
+        finally:
+            cursor.close()
+            connection.close()
+        return result
 
-    def query(self, query):
-        cursor = self.connection.cursor()
+    @staticmethod
+    def query(q):
+        connection = MyDatabase._pool.get_connection()
+        cursor = connection.cursor()
         try:
-            cursor.execute(query)
+            cursor.execute(q)
             result = cursor.fetchall()
-            return result
         except Error as e:
             print(f"Database query error: '{e}'")
-            return False
+            result = False
+        finally:
+            cursor.close()
+            connection.close()
+        return result
         
     def user_login(self, un, pw):
         q = "SELECT * FROM Userinfo WHERE username = '{}' AND password = '{}'".format(un, pw)
-        print(q)
         return self.query(q)
     
     def username_check(self, un):
-        q = "SELECT * FROM Userinfo WHERE username = {}".format(un)
-        result = self.query(q)
-        if result:
-            return False
-        else:
-            return True
+        q = "SELECT * FROM Userinfo WHERE username = '{}'".format(un)
+        return self.query(q)
 
     def valid_userid(self):
-        q = "SELECT COUNT(*) FROM Userinfo"
-        return self.query(q)
+        q = "SELECT MAX(userid) FROM Userinfo"
+        return self.query(q)[0][0] + 1
 
     def user_register(self, un, pw, email, phonenum):
         userid = self.valid_userid()
-        q = "INSERT INTO Userinfo VALUES({},{},{},{},{})".format(userid, un, pw, email, phonenum)
-        return self.query(q)
+        q = "INSERT INTO Userinfo VALUES({},'{}','{}','{}','{}')".format(userid, un, pw, email, phonenum)
+        return self.execute(q)
     
     def search_by_keyword(self, keyword):
         q  = "SELECT * FROM Gameinfo WHERE queryname LIKE '%{}%'".format(keyword)
