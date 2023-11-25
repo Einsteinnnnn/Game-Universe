@@ -84,9 +84,9 @@ class MyDatabase:
         return self.query(q)
 
     def add_review(self, userid, gameid, review):
-        q = "INSERT INTO Gamereview VALUES({},{},{})".format(userid, gameid, review)
-        return self.query(q)
+        q = "INSERT INTO Gamereview VALUES({},{},'{}')".format(userid, gameid, review)
+        return self.execute(q)
     
     def add_favorite(self, userid, gameid):
         q = "INSERT INTO Userfavorite VALUES({},{})".format(userid, gameid)
-        return self.query(q)
+        return self.execute(q)
