@@ -64,6 +64,10 @@ class MyDatabase:
     def user_login(self, un, pw):
         q = "SELECT * FROM Userinfo WHERE username = '{}' AND password = '{}'".format(un, pw)
         return self.query(q)
+    
+    def username_check(self, un):
+        q = "SELECT * FROM Userinfo WHERE username = '{}'".format(un)
+        return self.query(q)
 
     def valid_userid(self):
         q = "SELECT MAX(userid) FROM Userinfo"

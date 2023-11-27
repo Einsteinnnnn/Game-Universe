@@ -25,3 +25,16 @@ export const success = (m) => {
         content: m,
     });
 }
+
+export const processSearchResult = (data) => {
+    const processedResult = data.map(item => {
+        return {
+            title: item[2],
+            description: 'Released on: ' + item[4],
+            content: item[24],
+            img: item[30],
+            recommendations: item[11],
+        };
+    });
+    return processedResult;
+}

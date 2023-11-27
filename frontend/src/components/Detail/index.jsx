@@ -1,7 +1,6 @@
 import React from 'react';
 import './index.css';
-import { Row, Col, List, Avatar, Image, Button, Input, Statistic } from 'antd';
-import Typography from 'antd/es/typography/Typography';
+import { Row, Col, List, Avatar, Image, Button, Input, Statistic, Typography } from 'antd';
 
 const comments = [
     {
@@ -26,42 +25,42 @@ const comments = [
     },
     {
         title: 'User 6',
-        description: "Don't buy it. Don't buy it. Don't buy it. Don't buy it. Don't buy it."
+        description: "等等，我叫User 6，是不是意味着GTA6就要出了！（错乱"
     },
     {
-        title: 'User 1',
-        description: 'Best game ever! Best game ever! Best game ever! Best game ever!'
+        title: 'User 7',
+        description: '我是R星的狗'
     },
     {
-        title: 'User 2',
-        description: 'Rabbish. '
+        title: 'User 8',
+        description: '🕆R门🕆🕆R门🕆🕆R门🕆🕆R门🕆🕆R门🕆🕆R门🕆🕆R门🕆🕆R门🕆🕆R门🕆'
     },
     {
-        title: 'User 3',
-        description: 'GOATED!'
+        title: 'User 9',
+        description: '典'
     },
     {
-        title: 'User 4',
-        description: "Don't waste your time. That's all I can say. Don't waste your time. That's all I can say. Don't waste your time. That's all I can say. Don't waste your time. That's all I can say."
+        title: 'User 10',
+        description: "R孝子差不多得了"
     },
     {
-        title: 'User 5',
-        description: "literally the best game ever"
+        title: 'User 11',
+        description: "R*怎么你了"
     },
     {
-        title: 'User 6',
-        description: "Don't buy it. Don't buy it. Don't buy it. Don't buy it. Don't buy it."
+        title: 'User 12',
+        description: "原神，启动！"
     },
 ];
 
 const gameData = {
-    Developer: 'Game Developer',
-    Publisher: 'Game Publisher',
-    SupportedPlatform: 'Windows',
-    SupportedLanguage: 'English',
-    Genre: 'Action, Adventure, RPG',
-    AgeRestriction: '18+',
-    NumberOfPlayers: '1-4',
+    'Developer': 'Rockstar Games',
+    'Publisher': 'Rockstar Games',
+    'Supported Platform': 'Windows',
+    'Supported Language': 'English',
+    'Genre': 'Action, Adventure, RPG',
+    'Age Restriction': '18+',
+    'Number of Players': '1',
 }
 
 const gameDataList = Object.keys(gameData).map((key) => ({
@@ -79,7 +78,7 @@ const Detail = ({ currentPage, setCurrentPage, user }) => {
                         <div className='detail-game-image'>
                             <Image
                                 width='60%'
-                                src="https://gw.alipayobjects.com/zos/rmsportal/mqaQswcyDLcXyDKnZfES.png"
+                                src="https://i.redd.it/a7qlyr6n4nq31.png"
                             />
                             <div style={{textAlign:'end'}}>
                                 <Statistic title="Original Price" value={200} prefix='$'/>
@@ -88,7 +87,7 @@ const Detail = ({ currentPage, setCurrentPage, user }) => {
                             </div>
                         </div>
                         <div style={{ marginTop: '20px' }}>
-                            <Typography.Title level={1} style={{ color: '#DCE3EF' }}>Game Name</Typography.Title>
+                            <Typography.Title level={1} style={{ color: '#DCE3EF' }}>Red Dead Redemption II</Typography.Title>
                         </div>
                         {gameDataList.map((item) => (
                             <div className='detail-game-description-row'>

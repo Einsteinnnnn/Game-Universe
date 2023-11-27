@@ -13,8 +13,15 @@ import apis from '../../api';
 
 function Main() {
 
-    const [currentPage, setCurrentPage] = React.useState('home');
+    const [currentPage, _setCurrentPage] = React.useState('home');
     const [user, setUser] = React.useState(null);
+    const [searchResult, setSearchResult] = React.useState(null);
+    const [searchKeyword, setSearchKeyword] = React.useState('');
+
+    const setCurrentPage = (page) => {
+        window.scrollTo(0, 0);
+        _setCurrentPage(page);
+    }
 
     React.useEffect(() => {
         backend.request(apis.userInfo, {}, (response) => {
@@ -38,8 +45,8 @@ function Main() {
             {currentPage !== 'login' && currentPage !== 'register' && <>
                 <Header currentPage={currentPage} setCurrentPage={setCurrentPage} user={user}/>
             </>}
-            {currentPage === 'home' && <Home currentPage={currentPage} setCurrentPage={setCurrentPage} user={user}/>}
-            {currentPage === 'search' && <Search currentPage={currentPage} setCurrentPage={setCurrentPage} user={user}/>}
+            {currentPage === 'home' && <Home currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} setSearchResult={setSearchResult} setSearchKeyword={setSearchKeyword}/>}
+            {currentPage === 'search' && <Search currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} searchResult={searchResult} setSearchResult={setSearchResult} searchKeyword={searchKeyword} setSearchKeyword={setSearchKeyword}/>}
             {currentPage === 'favorite' && <Favorite currentPage={currentPage} setCurrentPage={setCurrentPage} user={user}/>}
             {currentPage === 'detail' && <Detail currentPage={currentPage} setCurrentPage={setCurrentPage} user={user}/>}
             {currentPage !== 'login' && currentPage !== 'register' && <>

@@ -39,6 +39,15 @@ const apis = {
         },
         enableMock: false,
     },
+    basicSearch: {
+        url: '/basic-search',
+        method: 'get',
+        mock: {
+            status: 'ok',
+            data: [],
+        },
+        enableMock: false,
+    },
 }
 
 if (enableMock) {

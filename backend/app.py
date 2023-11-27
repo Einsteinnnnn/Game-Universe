@@ -47,7 +47,6 @@ def user_info():
         return {'status': 'error', 'message': 'Login required.'}
     username = session['username']
     result = my_database.username_check(username)
-    print(result)
     if result:
         return {'status': 'ok', 'data': result}
     else:
@@ -72,6 +71,19 @@ def register():
             return {'status': 'ok'}
         else:
             return {'status': 'error', 'message': 'Failed to register.'}
+        
+
+@app.route('/api/basic-search', methods=['GET'])
+def basic_search():
+    keyword = request.args.get('keyword')
+    if keyword:
+        result = my_database.search_by_keyword(keyword)
+        if result:
+            return {'status': 'ok', 'data': result}
+        else:
+            return {'status': 'ok', 'data': []}
+    else:
+        return {'status': 'error', 'message': 'Invalid request.'}
 
 
 if __name__ == '__main__':

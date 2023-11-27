@@ -2,8 +2,11 @@ import React from 'react';
 import './index.css';
 import { Input, ConfigProvider, Typography, List, Avatar, Space } from 'antd';
 import { SearchOutlined, FireOutlined } from '@ant-design/icons';
+import backend from '../../backend';
+import apis from '../../api';
+import { handleResponse, processSearchResult } from '../../utils';
 
-const trendingData = Array.from({ length: 20 }).map((_, i) => ({
+const trendingData = Array.from({ length: 10 }).map((_, i) => ({
     href: 'https://ant.design',
     title: `Game ranked ${i+1}`,
     avatar: `https://xsgames.co/randomusers/avatar.php?g=pixel&key=${i}`,
@@ -20,7 +23,24 @@ const trendingData = Array.from({ length: 20 }).map((_, i) => ({
     </Space>
   );
 
-function Home({currentPage, setCurrentPage, user}) {
+
+
+function Home({currentPage, setCurrentPage, user, setSearchResult, setSearchKeyword}) {
+
+    const startSearch = (e) => {
+        var keyword = e.target.value;
+        if (keyword !== ''){
+            setSearchResult(null);
+            setCurrentPage('search');
+            setSearchKeyword(keyword)
+            backend.request(apis.basicSearch, {keyword: keyword}, (res) => {
+                if (handleResponse(res)){
+                    setSearchResult(processSearchResult(res.data));
+                }
+            });
+        }
+    }
+
     return (
         <div className='Home'>
             <div className='home-search'>
@@ -34,7 +54,7 @@ function Home({currentPage, setCurrentPage, user}) {
                     }}
                 >
                     <Typography.Title level={2} style={{ color: '#DCE3EF', marginBottom: '20px', textAlign: 'center' }}>Discover, Play, and Conquer.</Typography.Title>
-                    <Input placeholder="Search for games" size='large' style={{ borderRadius: '40px' }} prefix={<SearchOutlined />} />
+                    <Input placeholder="Search for games" size='large' style={{ borderRadius: '40px' }} prefix={<SearchOutlined />} onPressEnter={(e) => startSearch(e)}/>
                 </ConfigProvider>
                 <div className='home-trending'>
                     <Typography.Title level={3} style={{ color: '#DCE3EF', marginBottom: '20px' }}>Trending <span style={{ fontSize: '20px' }}><FireOutlined /></span></Typography.Title>
