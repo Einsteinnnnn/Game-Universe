@@ -65,6 +65,7 @@ class MyDatabase:
         q = "SELECT * FROM Userinfo WHERE username = '{}' AND password = '{}'".format(un, pw)
         return self.query(q)
     
+    # don't delete. used in app.py
     def username_check(self, un):
         q = "SELECT * FROM Userinfo WHERE username = '{}'".format(un)
         return self.query(q)
