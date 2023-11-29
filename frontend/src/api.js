@@ -48,6 +48,15 @@ const apis = {
         },
         enableMock: false,
     },
+    advancedSearch: {
+        url: '/advanced-search',
+        method: 'post',
+        mock: {
+            status: 'ok',
+            data: [],
+        },
+        enableMock: false,
+    },
 }
 
 if (enableMock) {

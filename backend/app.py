@@ -84,6 +84,28 @@ def basic_search():
             return {'status': 'ok', 'data': []}
     else:
         return {'status': 'error', 'message': 'Invalid request.'}
+    
+
+@app.route('/api/advanced-search', methods=['POST'])
+def advanced_search():
+    post_data = request.get_json()
+    try:
+        genre = post_data['genre']
+        category = post_data['category']
+        os_platforms = post_data['os_platforms']
+        language = post_data['language']
+        required_age = post_data['required_age']
+        metacritic_lowerbnd = post_data['metacritic_lowerbnd']
+        steam_spy_owners = post_data['steamspyowners']
+        price_lower = post_data['price'][0]*10
+        price_upper = post_data['price'][1]*10
+    except:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    result = my_database.search_by_filter(genre, category, os_platforms, language, required_age, metacritic_lowerbnd, steam_spy_owners, price_lower, price_upper)
+    if result:
+        return {'status': 'ok', 'data': result}
+    else:
+        return {'status': 'ok', 'data': []}
 
 
 if __name__ == '__main__':

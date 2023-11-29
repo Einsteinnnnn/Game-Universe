@@ -15,7 +15,7 @@ function Main() {
 
     const [currentPage, _setCurrentPage] = React.useState('home');
     const [user, setUser] = React.useState(null);
-    const [searchResult, setSearchResult] = React.useState(null);
+    const [searchResult, setSearchResult] = React.useState([]);
     const [searchKeyword, setSearchKeyword] = React.useState('');
 
     const setCurrentPage = (page) => {
