@@ -153,6 +153,142 @@ class MyDatabase:
         return self.execute(q)
 
 
+create_procedure_gamecount_query_Developer = """
+DELIMITER //
+
+CREATE PROCEDURE UpdateDeveloperGameCount(IN gameId INT)
+BEGIN
+    DECLARE devId INT;
+    DECLARE devCount INT;
+
+    SELECT developerid INTO devId FROM Develop WHERE gameid = gameId;
+
+    SELECT COUNT(*) INTO devCount FROM Develop WHERE developerid = devId;
+
+    UPDATE Developer SET gamecount = devCount WHERE developerid = devId;
+END //
+
+DELIMITER ;
+"""
+
+create_procedure_gamecount_query_Publisher = """
+DELIMITER //
+
+CREATE PROCEDURE UpdateDeveloperGameCount(IN gameId INT)
+BEGIN
+    DECLARE pubId INT;
+    DECLARE pubCount INT;
+
+    SELECT publisherid INTO pubId FROM Publish WHERE gameid = gameId;
+
+    SELECT COUNT(*) INTO pubCount FROM Publish WHERE publisherid = pubId;
+
+    UPDATE Publisher SET gamecount = pubCount WHERE publisherid = pubId;
+END //
+
+DELIMITER ;
+"""
+
+create_procedure_avgmetacritic_query_Developer = """
+DELIMITER //
+
+CREATE PROCEDURE UpdateDeveloperAvgMetacritic(IN gameId INT)
+BEGIN
+    DECLARE devId INT;
+    DECLARE devAvgMetacritic FLOAT;
+    DECLARE gameMetacritic FLOAT;
+    DECLARE done INT DEFAULT 0;
+
+    SELECT developerid INTO devId FROM Develop WHERE gameid = gameId;
+    
+    SELECT AVG(Gameinfo.metacritic) INTO devAvgMetacritic FROM Develop
+    JOIN Gameinfo ON Develop.gameid = Gameinfo.queryid
+    WHERE Develop.developerid = devId;
+
+    SELECT metacritic INTO gameMetacritic FROM Gameinfo WHERE queryid = gameId;
+
+    IF gameMetacritic <> 0 THEN
+        DECLARE updateCursor CURSOR FOR
+            SELECT queryid FROM Gameinfo WHERE metacritic <> 0;
+
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+        OPEN updateCursor;
+
+        REPEAT
+            FETCH updateCursor INTO gameId;
+            UPDATE Developer SET avgmetacritic = devAvgMetacritic WHERE developerid = devId;
+        UNTIL done END REPEAT;
+
+        CLOSE updateCursor;
+    END IF;
+END //
+
+DELIMITER ;
+"""
+
+create_procedure_avgmetacritic_query_Publisher = """
+DELIMITER //
+
+CREATE PROCEDURE UpdatePublisherAvgMetacritic(IN gameId INT)
+BEGIN
+    DECLARE pubId INT;
+    DECLARE pubAvgMetacritic FLOAT;
+    DECLARE gameMetacritic FLOAT;
+    DECLARE done INT DEFAULT 0;
+
+    SELECT publisherid INTO pubId FROM Publish WHERE gameid = gameId;
+
+    SELECT AVG(Gameinfo.metacritic) INTO pubAvgMetacritic FROM Publish
+    JOIN Gameinfo ON Publish.gameid = Gameinfo.queryid
+    WHERE Publish.publisherid = pubId;
+
+    SELECT metacritic INTO gameMetacritic FROM Gameinfo WHERE queryid = gameId;
+
+    IF gameMetacritic <> 0 THEN
+        DECLARE updateCursor CURSOR FOR
+            SELECT queryid FROM Gameinfo WHERE metacritic <> 0;
+
+        DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+        OPEN updateCursor;
+
+        REPEAT
+            FETCH updateCursor INTO gameId;
+            UPDATE Publisher SET avgmetacritic = pubAvgMetacritic WHERE publisherid = pubId;
+        UNTIL done END REPEAT;
+
+        CLOSE updateCursor;
+    END IF;
+END //
+
+DELIMITER ;
+"""
+
+create_trigger_query = """
+DELIMITER //
+
+CREATE TRIGGER AfterDevelopInsertUpdateDelete
+AFTER INSERT OR UPDATE OR DELETE ON Develop
+FOR EACH ROW
+BEGIN
+
+    SET gameId = NEW.gameid;
+
+    CALL UpdateDeveloperGameCount(gameId);
+    CALL UpdatePublisherGameCount(gameId);
+    
+    IF NEW.Metacritic <> 0 THEN
+         CALL UpdateDeveloperAvgMetacritic(gameId);
+         CALL UpdatePublisherAvgMetacritic(gameId);
+    END IF;
+
+END //
+
+DELIMITER ;
+"""
+
+
+
+
 if __name__=="__main__":
     db = MyDatabase("yanxinl4", "123456")
     result = db.search_by_keyword("red")
