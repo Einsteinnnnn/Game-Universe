@@ -172,6 +172,10 @@ class MyDatabase:
         q = "SELECT username, gameid, review FROM Userinfo u JOin Gamereview g ON u.userid = g.userid WHERE gameid = {}".format(queryid)
         return self.query(q)
 
+    def get_userfavorite(self, userid):
+        q = "SELECT * FROM Gameinfo g JOIN Userfavorite u ON g.queryid = u.gameid WHERE u.userid = {}".format(userid)
+        return self.query(q)
+
     def create_procedure_triggers(self):
         create_procedure_gamecount_query_Developer = """
         DELIMITER //
