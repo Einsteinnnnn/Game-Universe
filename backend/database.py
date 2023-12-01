@@ -195,6 +195,8 @@ class MyDatabase:
         
         CREATE PROCEDURE Return_TOP_and_BOT_10()
         BEGIN
+            DECLARE gameid INT;
+            DECLARE numUsers INT;
             DECLARE done int default 0;
             DROP TABLE IF EXISTS TOP;
             CREATE TABLE TOP
@@ -250,7 +252,7 @@ class MyDatabase:
             END REPEAT
             CLOSE TOPcursor;
 
-            SET done=1;
+            SET done=0;
 
             SET @averageBOT=(
                 SELECT avg(numUsers)
@@ -448,7 +450,7 @@ class MyDatabase:
                 END IF;
             UNTIL done END REPEAT;
             CLOSE dev_cur;
-            SET done = 1;
+            SET done = 0;
             OPEN pub_cur;
             REPEAT
                 FETCH pub_cur INTO name;
