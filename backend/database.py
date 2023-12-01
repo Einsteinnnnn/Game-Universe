@@ -180,6 +180,110 @@ class MyDatabase:
         q = "SELECT * FROM Userinfo WHERE userid = {}".format(userid)
         return self.query(q)
 
+    def call_procedure(self):
+        q = "CALL Return_TOP_and_BOT_10"
+        self.execute(q)
+        if result:
+            q = "SELECT * FROM return_TOP"
+            return self.query(q)
+        return False
+
+    def create_procedure(self):
+        p = "DROP PROCEDURE IF EXISTS Return_TOP_and_BOT_10"
+        self.execute(p)
+        p_10 = """
+        
+        CREATE PROCEDURE Return_TOP_and_BOT_10()
+        BEGIN
+            DECLARE done int default 0;
+            DROP TABLE IF EXISTS TOP;
+            CREATE TABLE TOP
+            SELECT gameid, COUNT(DISTINCT userid) as numUsers 
+            FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid=Gameinfo.queryid 
+            GROUP BY gameid
+            ORDER BY numUsers DESC
+            LIMIT 10;
+
+            DROP TABLE IF EXISTS BOT;
+            CREATE TABLE BOT
+            SELECT gameid, COUNT(DISTINCT userid) as numUsers 
+            FROM Userfavorite 
+            JOIN Gameinfo ON Userfavorite.gameid=Gameinfo.queryid 
+            GROUP BY gameid
+            ORDER BY numUsers ASC
+            LIMIT 10;
+
+            DECLARE TOPcursor CURSOR FOR
+                SELECT gameid, numUsers
+                FROM TOP;
+            DECLARE BOTcursor CURSOR FOR
+                SELECT gameid, numUsers
+                FROM BOT;
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done=1;
+
+            SET @averageTOP = (
+                SELECT avg(numUsers)
+                FROM TOP
+            );  
+
+            DROP TABLE IF EXISTS return_TOP;
+            CREATE TABLE return_TOP(
+                gameid INT,
+                numUsers_indicator VARCHAR(255)
+            )
+
+            OPEN TOPcursor;
+
+            REPEAT
+               FETCH TOPcursor INTO gameid, numUsers;
+                IF numUsers<averageTOP THEN
+                    INSERT IGNORE INTO return_TOP
+                    VALUES(gameid, "popular, but yet not so popular");
+                ELSEIF numUsers=averageTOP THEN
+                    INSERT IGNORE INTO return_TOP
+                    VALUES(gameid, "popular");
+                ELSEIF numUsers>averageTOP THEN
+                    INSERT IGNORE INTO return_TOP
+                    VALUES(gameid, "popular, and very popular"); 
+                END IF;
+            UNTIL done
+            END REPEAT
+            CLOSE TOPcursor;
+
+            SET done=1;
+
+            SET @averageBOT=(
+                SELECT avg(numUsers)
+                FROM BOT
+            );  
+
+            DROP TABLE IF EXISTS return_BOT;
+            CREATE TABLE return_BOT(
+                gameid INT,
+                numUsers_indicator VARCHAR(255)
+            )
+
+            OPEN BOTcursor;
+            REPEAT
+                FETCH BOTcursor INTO gameid, numUsers;
+                IF numUsers<averageBOT THEN
+                    INSERT IGNORE INTO return_BOT
+                    VALUES(gameid, "very not popular");
+                ELSEIF numUsers=averageBOT THEN
+                    INSERT IGNORE INTO return_BOT
+                    VALUES(gameid, "not popular");
+                ELSEIF numUsers>averageBOT THEN
+                    INSERT IGNORE INTO return_BOT
+                    VALUES(gameid, "not popular, but not yet not very popular"); 
+                END IF;
+            UNTIL done
+            END REPEAT
+            CLOSE BOTcursor;
+
+        END
+        """
+        return self.execute(p_10)
+
     def create_trigger(self):
         q_di = """
         CREATE TRIGGER Develop_Insert
@@ -359,29 +463,7 @@ class MyDatabase:
             CLOSE pub_cur;
         END
         """
-        return self.execute(q_gu)
-    
-    def test_procedure(self):
-        # q = "SELECT ROUTINE_DEFINITION FROM information_schema.ROUTINES WHERE SPECIFIC_NAME='UpdatePublisherGameCount'"
-        # q = "SELECT SPECIFIC_NAME FROM information_schema.ROUTINES"
-        # q = "DROP PROCEDURE UpdatePublisherGameCount"
-        # q = "SHOW TRIGGERS"
-        # q = "select trigger_schema, trigger_name, action_statement from information_schema.triggers"
-        # q = "select trigger_schema, trigger_name from information_schema.triggers"
-        
-        # q1 = "INSERT INTO Gameinfo(queryid, queryname, metacritic) VALUES(989898, 'game for test', 5)"
-        # q2 = "INSERT INTO Developer VALUES('developer for test', 0, 0)"
-        # q3 = "INSERT INTO Develop VALUES('developer for test', 989898)"
-        # q0 = "DROP TRIGGER IF EXISTS Gameinfo_update"
-        # self.execute(q0)
-        # self.create_trigger()
-        # print(self.get_gameinfo(989898))
-        # q4 = "UPDATE Gameinfo SET metacritic = 1 WHERE queryid = 989898"
-        # self.execute(q4)
-        # print(self.get_gameinfo(989898))
-        # q = "SELECT * FROM Developer WHERE developername = 'developer for test'"
-        # print(self.query(q))
-        return True
+        return self.execute(q_di) and self.execute(q_du) and self.execute(q_dd) and self.execute(q_pi) and self.execute(q_pu) and self.execute(q_pd) and self.execute(q_gu)
 
 if __name__=="__main__":
     db = MyDatabase("yanxinl4", "123456")
@@ -390,5 +472,25 @@ if __name__=="__main__":
     # db.add_review(1, 39800, "It is a good game! My son plays it everyday.")
     # result = db.get_gamereview(39800)
     # result = db.create_trigger()
-    result = db.test_procedure()
     # print(result)
+    # q = "SELECT ROUTINE_DEFINITION FROM information_schema.ROUTINES WHERE SPECIFIC_NAME='UpdatePublisherGameCount'"
+    # q = "SELECT SPECIFIC_NAME FROM information_schema.ROUTINES"
+    # q = "DROP PROCEDURE UpdatePublisherGameCount"
+    # q = "SHOW TRIGGERS"
+    # q = "select trigger_schema, trigger_name, action_statement from information_schema.triggers"
+    # q = "select trigger_schema, trigger_name from information_schema.triggers"
+        
+    # q1 = "INSERT INTO Gameinfo(queryid, queryname, metacritic) VALUES(989898, 'game for test', 5)"
+    # q2 = "INSERT INTO Developer VALUES('developer for test', 0, 0)"
+    # q3 = "INSERT INTO Develop VALUES('developer for test', 989898)"
+    # self.create_trigger()
+    # print(self.get_gameinfo(989898))
+    # q4 = "UPDATE Gameinfo SET metacritic = 1 WHERE queryid = 989898"
+    # self.execute(q4)
+    # print(self.get_gameinfo(989898))
+    # q = "SELECT * FROM Developer WHERE developername = 'developer for test'"
+    # print(self.query(q))
+    db.create_procedure()
+    # db.call_procedure()
+    
+    
