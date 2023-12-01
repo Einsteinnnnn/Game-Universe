@@ -180,142 +180,208 @@ class MyDatabase:
         q = "SELECT * FROM Userinfo WHERE userid = {}".format(userid)
         return self.query(q)
 
-    def create_procedure_triggers(self):
-        create_procedure_gamecount_query_Developer = """
-        DELIMITER //
-
-        CREATE PROCEDURE UpdateDeveloperGameCount(IN gameId INT)
+    def create_trigger(self):
+        q_di = """
+        CREATE TRIGGER Develop_Insert
+        AFTER INSERT ON Develop
+            FOR EACH ROW
         BEGIN
-            DECLARE devId INT;
-            DECLARE devCount INT;
-
-            SELECT developerid INTO devId FROM Develop WHERE gameid = gameId;
-
-            SELECT COUNT(*) INTO devCount FROM Develop WHERE developerid = devId;
-
-            UPDATE Developer SET gamecount = devCount WHERE developerid = devId;
-        END //
-
-        DELIMITER ;
-        """
-        create_procedure_gamecount_query_Publisher = """
-        DELIMITER //
-
-        CREATE PROCEDURE UpdateDeveloperGameCount(IN gameId INT)
-        BEGIN
-            DECLARE pubId INT;
-            DECLARE pubCount INT;
-
-            SELECT publisherid INTO pubId FROM Publish WHERE gameid = gameId;
-
-            SELECT COUNT(*) INTO pubCount FROM Publish WHERE publisherid = pubId;
-
-            UPDATE Publisher SET gamecount = pubCount WHERE publisherid = pubId;
-        END //
-
-        DELIMITER ;
-        """
-
-        create_procedure_avgmetacritic_query_Developer = """
-        DELIMITER //
-
-        CREATE PROCEDURE UpdateDeveloperAvgMetacritic(IN gameId INT)
-        BEGIN
-            DECLARE devId INT;
-            DECLARE devAvgMetacritic FLOAT;
-            DECLARE gameMetacritic FLOAT;
-            DECLARE done INT DEFAULT 0;
-
-            SELECT developerid INTO devId FROM Develop WHERE gameid = gameId;
-            
-            SELECT AVG(Gameinfo.metacritic) INTO devAvgMetacritic FROM Develop
-            JOIN Gameinfo ON Develop.gameid = Gameinfo.queryid
-            WHERE Develop.developerid = devId;
-
-            SELECT metacritic INTO gameMetacritic FROM Gameinfo WHERE queryid = gameId;
-
-            IF gameMetacritic <> 0 THEN
-                DECLARE updateCursor CURSOR FOR
-                    SELECT queryid FROM Gameinfo WHERE metacritic <> 0;
-
-                DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-                OPEN updateCursor;
-
-                REPEAT
-                    FETCH updateCursor INTO gameId;
-                    UPDATE Developer SET avgmetacritic = devAvgMetacritic WHERE developerid = devId;
-                UNTIL done END REPEAT;
-
-                CLOSE updateCursor;
+            SET @gamecnt = (SELECT gamecount
+                            FROM Developer d 
+                            WHERE d.developername = new.developername);
+            UPDATE Developer SET gamecount = @gamecnt + 1 WHERE developername = new.developername;
+            SET @metacritic = (SELECT metacritic
+                                FROM Gameinfo
+                                WHERE queryid = new.gameid);
+            IF @metacritic <> 0 THEN
+                SET @new_avg = (SELECT AVG(metacritic)
+                                FROM Develop d JOIN Gameinfo g ON d.gameid = g.queryid
+                                WHERE d.developername = new.developername AND metacritic <> 0
+                                GROUP BY d.developername);
+                UPDATE Developer SET avgmetacritic = @new_avg WHERE developername = new.developername;
             END IF;
-        END //
-
-        DELIMITER ;
+        END
         """
 
-        create_procedure_avgmetacritic_query_Publisher = """
-        DELIMITER //
-
-        CREATE PROCEDURE UpdatePublisherAvgMetacritic(IN gameId INT)
+        q_du = """
+        CREATE TRIGGER Develop_Update
+        AFTER Update ON Develop
+            FOR EACH ROW
         BEGIN
-            DECLARE pubId INT;
-            DECLARE pubAvgMetacritic FLOAT;
-            DECLARE gameMetacritic FLOAT;
-            DECLARE done INT DEFAULT 0;
-
-            SELECT publisherid INTO pubId FROM Publish WHERE gameid = gameId;
-
-            SELECT AVG(Gameinfo.metacritic) INTO pubAvgMetacritic FROM Publish
-            JOIN Gameinfo ON Publish.gameid = Gameinfo.queryid
-            WHERE Publish.publisherid = pubId;
-
-            SELECT metacritic INTO gameMetacritic FROM Gameinfo WHERE queryid = gameId;
-
-            IF gameMetacritic <> 0 THEN
-                DECLARE updateCursor CURSOR FOR
-                    SELECT queryid FROM Gameinfo WHERE metacritic <> 0;
-
-                DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-                OPEN updateCursor;
-
-                REPEAT
-                    FETCH updateCursor INTO gameId;
-                    UPDATE Publisher SET avgmetacritic = pubAvgMetacritic WHERE publisherid = pubId;
-                UNTIL done END REPEAT;
-
-                CLOSE updateCursor;
+            SET @gamecnt = (SELECT COUNT(*) 
+                            FROM Develop d 
+                            WHERE d.developername = new.developername
+                            GROUP BY developername);
+            UPDATE Developer SET gamecount = @gamecnt WHERE developername = new.developername;
+            SET @metacritic = (SELECT metacritic
+                                FROM Gameinfo
+                                WHERE queryid = new.gameid);
+            IF @metacritic <> 0 THEN
+                SET @new_avg = (SELECT AVG(metacritic)
+                                FROM Develop d JOIN Gameinfo g ON d.gameid = g.queryid
+                                WHERE d.developername = new.developername AND metacritic <> 0
+                                GROUP BY d.developername);
+                UPDATE Developer SET avgmetacritic = @new_avg WHERE developername = new.developername;
             END IF;
-        END //
-
-        DELIMITER ;
+        END
         """
 
-        create_trigger_query = """
-        DELIMITER //
-
-        CREATE TRIGGER AfterDevelopInsertUpdateDelete
-        AFTER INSERT OR UPDATE OR DELETE ON Develop
-        FOR EACH ROW
+        q_dd = """
+        CREATE TRIGGER Develop_Delete
+        AFTER DELETE ON Develop
+            FOR EACH ROW
         BEGIN
-
-            SET gameId = NEW.gameid;
-
-            CALL UpdateDeveloperGameCount(gameId);
-            CALL UpdatePublisherGameCount(gameId);
-            
-            IF NEW.Metacritic <> 0 THEN
-                CALL UpdateDeveloperAvgMetacritic(gameId);
-                CALL UpdatePublisherAvgMetacritic(gameId);
+            SET @gamecnt = (SELECT gamecount
+                            FROM Developer d 
+                            WHERE d.developername = old.developername);
+            UPDATE Developer SET gamecount = @gamecnt - 1 WHERE developername = old.developername;
+            SET @metacritic = (SELECT metacritic
+                                FROM Gameinfo
+                                WHERE queryid = old.gameid);
+            IF @metacritic <> 0 THEN
+                SET @new_avg = (SELECT AVG(metacritic)
+                                FROM Develop d JOIN Gameinfo g ON d.gameid = g.queryid
+                                WHERE d.developername = old.developername AND metacritic <> 0
+                                GROUP BY d.developername);
+                UPDATE Developer SET avgmetacritic = @new_avg WHERE developername = old.developername;
             END IF;
-
-        END //
-
-        DELIMITER ;
+        END
         """
-        return self.execute(create_procedure_gamecount_query_Developer) and self.execute(create_procedure_gamecount_query_Publisher) and self.execute(create_procedure_avgmetacritic_query_Developer) and self.execute(create_procedure_avgmetacritic_query_Publisher) and self.execute(create_trigger_query)
 
+        q_pi = """
+        CREATE TRIGGER Publish_Insert
+        AFTER INSERT ON Publish
+            FOR EACH ROW
+        BEGIN
+            SET @gamecnt = (SELECT gamecount
+                            FROM Publisher p 
+                            WHERE p.publishername = new.publishername);
+            UPDATE Publisher SET gamecount = @gamecnt + 1 WHERE publishername = new.publishername;
+            SET @metacritic = (SELECT metacritic
+                                FROM Gameinfo
+                                WHERE queryid = new.gameid);
+            IF @metacritic <> 0 THEN
+                SET @new_avg = (SELECT AVG(metacritic)
+                                FROM Publish p JOIN Gameinfo g ON p.gameid = g.queryid
+                                WHERE p.publishername = new.publishername AND metacritic <> 0
+                                GROUP BY p.publishername);
+                UPDATE Developer SET avgmetacritic = @new_avg WHERE publishername = new.publishername;
+            END IF;
+        END
+        """
 
+        q_pu = """
+        CREATE TRIGGER Publish_Update
+        AFTER Update ON Publish
+            FOR EACH ROW
+        BEGIN
+            SET @gamecnt = (SELECT COUNT(*) 
+                            FROM Publish p 
+                            WHERE p.publishername = new.publishername
+                            GROUP BY publishername);
+            UPDATE Publisher SET gamecount = @gamecnt WHERE publishername = new.publishername;
+            SET @metacritic = (SELECT metacritic
+                                FROM Gameinfo
+                                WHERE queryid = new.gameid);
+            IF @metacritic <> 0 THEN
+                SET @new_avg = (SELECT AVG(metacritic)
+                                FROM Publish p JOIN Gameinfo g ON p.gameid = g.queryid
+                                WHERE p.publishername = new.publishername AND metacritic <> 0
+                                GROUP BY p.publishername);
+                UPDATE Publisher SET avgmetacritic = @new_avg WHERE publishername = new.publishername;
+            END IF;
+        END
+        """
 
+        q_pd = """
+        CREATE TRIGGER Publish_Delete
+        AFTER DELETE ON Publish
+            FOR EACH ROW
+        BEGIN
+            SET @gamecnt = (SELECT gamecount
+                            FROM Publisher p 
+                            WHERE p.publishername = old.publishername);
+            UPDATE Publisher SET gamecount = @gamecnt - 1 WHERE publishername = old.publishername;
+            SET @metacritic = (SELECT metacritic
+                                FROM Gameinfo
+                                WHERE queryid = old.gameid);
+            IF @metacritic <> 0 THEN
+                SET @new_avg = (SELECT AVG(metacritic)
+                                FROM Publish p JOIN Gameinfo g ON p.gameid = g.queryid
+                                WHERE p.publishername = old.publishername AND metacritic <> 0
+                                GROUP BY p.publishername);
+                UPDATE Publisher SET avgmetacritic = @new_avg WHERE publishername = old.publishername;
+            END IF;
+        END
+        """
+
+        q_gu = """
+        CREATE TRIGGER Gameinfo_update
+        AFTER UPDATE ON Gameinfo
+            FOR EACH ROW
+        BEGIN
+            DECLARE done int default 0;
+            DECLARE name VARCHAR(255);
+            DECLARE dev_cur CURSOR FOR 
+                SELECT developername
+                FROM Develop
+                WHERE gameid = new.queryid;
+            DECLARE pub_cur CURSOR FOR 
+                SELECT publishername
+                FROM Publish
+                WHERE gameid = new.queryid;
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
+
+            OPEN dev_cur;
+            REPEAT
+                FETCH dev_cur INTO name;
+                IF old.metacritic <> new.metacritic THEN
+                    SET @dev_avg = (SELECT AVG(metacritic)
+                                    FROM Develop d JOIN Gameinfo g ON d.gameid = g.queryid
+                                    WHERE d.developername = name AND metacritic <> 0
+                                    GROUP BY d.developername);
+                    UPDATE Developer SET avgmetacritic = @dev_avg WHERE developername = name;
+                END IF;
+            UNTIL done END REPEAT;
+            CLOSE dev_cur;
+            SET done = 1;
+            OPEN pub_cur;
+            REPEAT
+                FETCH pub_cur INTO name;
+                IF old.metacritic <> new.metacritic THEN
+                    SET @pub_avg = (SELECT AVG(metacritic)
+                                    FROM Publish p JOIN Gameinfo g ON p.gameid = g.queryid
+                                    WHERE p.publishername = name AND metacritic <> 0
+                                    GROUP BY p.publishername);
+                    UPDATE Publisher SET avgmetacritic = @pub_avg WHERE publishername = name;
+                END IF;
+            UNTIL done END REPEAT;
+            CLOSE pub_cur;
+        END
+        """
+        return self.execute(q_gu)
+    
+    def test_procedure(self):
+        # q = "SELECT ROUTINE_DEFINITION FROM information_schema.ROUTINES WHERE SPECIFIC_NAME='UpdatePublisherGameCount'"
+        # q = "SELECT SPECIFIC_NAME FROM information_schema.ROUTINES"
+        # q = "DROP PROCEDURE UpdatePublisherGameCount"
+        # q = "SHOW TRIGGERS"
+        # q = "select trigger_schema, trigger_name, action_statement from information_schema.triggers"
+        # q = "select trigger_schema, trigger_name from information_schema.triggers"
+        
+        # q1 = "INSERT INTO Gameinfo(queryid, queryname, metacritic) VALUES(989898, 'game for test', 5)"
+        # q2 = "INSERT INTO Developer VALUES('developer for test', 0, 0)"
+        # q3 = "INSERT INTO Develop VALUES('developer for test', 989898)"
+        # q0 = "DROP TRIGGER IF EXISTS Gameinfo_update"
+        # self.execute(q0)
+        # self.create_trigger()
+        # print(self.get_gameinfo(989898))
+        # q4 = "UPDATE Gameinfo SET metacritic = 1 WHERE queryid = 989898"
+        # self.execute(q4)
+        # print(self.get_gameinfo(989898))
+        # q = "SELECT * FROM Developer WHERE developername = 'developer for test'"
+        # print(self.query(q))
+        return True
 
 if __name__=="__main__":
     db = MyDatabase("yanxinl4", "123456")
@@ -323,5 +389,6 @@ if __name__=="__main__":
     # result = db.search_by_filter("action", "singleplayer", "windows", "Chinese", 10, 5, 0, 0, 20)
     # db.add_review(1, 39800, "It is a good game! My son plays it everyday.")
     # result = db.get_gamereview(39800)
-    result = db.create_procedure()
-    print(result)
+    # result = db.create_trigger()
+    result = db.test_procedure()
+    # print(result)
