@@ -182,10 +182,10 @@ class MyDatabase:
 
     def call_procedure(self):
         q = "CALL Return_TOP_and_BOT_10"
-        self.execute(q)
+        result = self.execute(q)
         if result:
             q = "SELECT * FROM return_TOP"
-            return self.query(q=q)
+            return self.query(q)
         return False
 
     def create_procedure(self):
@@ -208,16 +208,16 @@ class MyDatabase:
             DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
             -- 创建或删除临时表
-            DROP TEMPORARY TABLE IF EXISTS TopGames, BotGames, return_TOP, return_BOT;
+            DROP TABLE IF EXISTS TopGames, BotGames, return_TOP, return_BOT;
 
-            CREATE TEMPORARY TABLE TopGames AS
+            CREATE TABLE TopGames AS
                 SELECT gameid, COUNT(DISTINCT userid) AS numUsers 
                 FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
                 GROUP BY gameid
                 ORDER BY numUsers DESC
                 LIMIT 10;
 
-            CREATE TEMPORARY TABLE BotGames AS
+            CREATE TABLE BotGames AS
                 SELECT gameid, COUNT(DISTINCT userid) AS numUsers 
                 FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
                 GROUP BY gameid
@@ -227,11 +227,11 @@ class MyDatabase:
             SET averageTOP = (SELECT AVG(numUsers) FROM TopGames);
             SET averageBOT = (SELECT AVG(numUsers) FROM BotGames);
 
-            CREATE TEMPORARY TABLE return_TOP(
+            CREATE TABLE return_TOP(
                 gameid INT,
                 numUsers_indicator VARCHAR(255)
             );
-            CREATE TEMPORARY TABLE return_BOT(
+            CREATE TABLE return_BOT(
                 gameid INT,
                 numUsers_indicator VARCHAR(255)
             );
@@ -477,6 +477,6 @@ if __name__=="__main__":
     # q = "SELECT * FROM Developer WHERE developername = 'developer for test'"
     # print(self.query(q))
     db.create_procedure()
-    # db.call_procedure()
+    print(db.call_procedure())
     
     
