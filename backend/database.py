@@ -185,7 +185,7 @@ class MyDatabase:
         self.execute(q)
         if result:
             q = "SELECT * FROM return_TOP"
-            return self.query(q)
+            return self.query(q=q)
         return False
 
     def create_procedure(self):
@@ -195,94 +195,78 @@ class MyDatabase:
         
         CREATE PROCEDURE Return_TOP_and_BOT_10()
         BEGIN
+            -- 声明变量
             DECLARE gameid INT;
             DECLARE numUsers INT;
-            DECLARE done int default 0;
-            DROP TABLE IF EXISTS TOP;
-            CREATE TABLE TOP
-            SELECT gameid, COUNT(DISTINCT userid) as numUsers 
-            FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid=Gameinfo.queryid 
-            GROUP BY gameid
-            ORDER BY numUsers DESC
-            LIMIT 10;
+            DECLARE averageTOP DOUBLE;
+            DECLARE averageBOT DOUBLE;
+            DECLARE done INT DEFAULT 0;
 
-            DROP TABLE IF EXISTS BOT;
-            CREATE TABLE BOT
-            SELECT gameid, COUNT(DISTINCT userid) as numUsers 
-            FROM Userfavorite 
-            JOIN Gameinfo ON Userfavorite.gameid=Gameinfo.queryid 
-            GROUP BY gameid
-            ORDER BY numUsers ASC
-            LIMIT 10;
+            -- 声明游标和异常处理器
+            DECLARE TOPcursor CURSOR FOR SELECT gameid, numUsers FROM TopGames;
+            DECLARE BOTcursor CURSOR FOR SELECT gameid, numUsers FROM BotGames;
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
-            DECLARE TOPcursor CURSOR FOR
-                SELECT gameid, numUsers
-                FROM TOP;
-            DECLARE BOTcursor CURSOR FOR
-                SELECT gameid, numUsers
-                FROM BOT;
-            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done=1;
+            -- 创建或删除临时表
+            DROP TEMPORARY TABLE IF EXISTS TopGames, BotGames, return_TOP, return_BOT;
 
-            SET @averageTOP = (
-                SELECT avg(numUsers)
-                FROM TOP
-            );  
+            CREATE TEMPORARY TABLE TopGames AS
+                SELECT gameid, COUNT(DISTINCT userid) AS numUsers 
+                FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
+                GROUP BY gameid
+                ORDER BY numUsers DESC
+                LIMIT 10;
 
-            DROP TABLE IF EXISTS return_TOP;
-            CREATE TABLE return_TOP(
+            CREATE TEMPORARY TABLE BotGames AS
+                SELECT gameid, COUNT(DISTINCT userid) AS numUsers 
+                FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
+                GROUP BY gameid
+                ORDER BY numUsers ASC
+                LIMIT 10;
+
+            SET averageTOP = (SELECT AVG(numUsers) FROM TopGames);
+            SET averageBOT = (SELECT AVG(numUsers) FROM BotGames);
+
+            CREATE TEMPORARY TABLE return_TOP(
                 gameid INT,
                 numUsers_indicator VARCHAR(255)
-            )
+            );
+            CREATE TEMPORARY TABLE return_BOT(
+                gameid INT,
+                numUsers_indicator VARCHAR(255)
+            );
 
+            -- 处理 TOP 游标
             OPEN TOPcursor;
-
             REPEAT
-               FETCH TOPcursor INTO gameid, numUsers;
-                IF numUsers<averageTOP THEN
-                    INSERT IGNORE INTO return_TOP
-                    VALUES(gameid, "popular, but yet not so popular");
-                ELSEIF numUsers=averageTOP THEN
-                    INSERT IGNORE INTO return_TOP
-                    VALUES(gameid, "popular");
-                ELSEIF numUsers>averageTOP THEN
-                    INSERT IGNORE INTO return_TOP
-                    VALUES(gameid, "popular, and very popular"); 
+                FETCH TOPcursor INTO gameid, numUsers;
+                IF numUsers < averageTOP THEN
+                    INSERT INTO return_TOP VALUES (gameid, "popular, but yet not so popular");
+                ELSEIF numUsers = averageTOP THEN
+                    INSERT INTO return_TOP VALUES (gameid, "popular");
+                ELSEIF numUsers > averageTOP THEN
+                    INSERT INTO return_TOP VALUES (gameid, "popular, and very popular");
                 END IF;
-            UNTIL done
-            END REPEAT
+            UNTIL done END REPEAT;
             CLOSE TOPcursor;
 
-            SET done=0;
+            -- 重置 done 标志
+            SET done = 0;
 
-            SET @averageBOT=(
-                SELECT avg(numUsers)
-                FROM BOT
-            );  
-
-            DROP TABLE IF EXISTS return_BOT;
-            CREATE TABLE return_BOT(
-                gameid INT,
-                numUsers_indicator VARCHAR(255)
-            )
-
+            -- 处理 BOT 游标
             OPEN BOTcursor;
             REPEAT
                 FETCH BOTcursor INTO gameid, numUsers;
-                IF numUsers<averageBOT THEN
-                    INSERT IGNORE INTO return_BOT
-                    VALUES(gameid, "very not popular");
-                ELSEIF numUsers=averageBOT THEN
-                    INSERT IGNORE INTO return_BOT
-                    VALUES(gameid, "not popular");
-                ELSEIF numUsers>averageBOT THEN
-                    INSERT IGNORE INTO return_BOT
-                    VALUES(gameid, "not popular, but not yet not very popular"); 
+                IF numUsers < averageBOT THEN
+                    INSERT INTO return_BOT VALUES (gameid, "very not popular");
+                ELSEIF numUsers = averageBOT THEN
+                    INSERT INTO return_BOT VALUES (gameid, "not popular");
+                ELSEIF numUsers > averageBOT THEN
+                    INSERT INTO return_BOT VALUES (gameid, "not popular, but not yet not very popular");
                 END IF;
-            UNTIL done
-            END REPEAT
+            UNTIL done END REPEAT;
             CLOSE BOTcursor;
-
-        END
+        END;
         """
         return self.execute(p_10)
 

@@ -1,3 +1,4 @@
+import re
 import sys
 from flask import Flask, request, session
 from datetime import timedelta
@@ -151,6 +152,83 @@ def favorite_games_delete():
         return {'status': 'ok'}
     else:
         return {'status': 'error', 'message': 'Failed to delete favorite game.'}
+    
+
+@app.route('/api/game-info', methods=['GET'])
+def game_info():
+    gameid = request.args.get('gameid')
+    if gameid:
+        result = my_database.get_gameinfo(gameid)
+        if result:
+            return {'status': 'ok', 'data': result}
+        else:
+            return {'status': 'error', 'message': 'Invalid gameid.'}
+    else:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    
+
+@app.route('/api/game-reviews', methods=['GET'])
+def game_reviews():
+    gameid = request.args.get('gameid')
+    if gameid:
+        result = my_database.get_gamereview(gameid)
+        if result:
+            return {'status': 'ok', 'data': result}
+        else:
+            return {'status': 'ok', 'data': []}
+    else:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    
+
+@app.route('/api/game-reviews-add', methods=['POST'])
+def game_reviews_add():
+    if 'uid' not in session:
+        return {'status': 'error', 'message': 'Login required.'}
+    uid = session['uid']
+    post_data = request.get_json()
+    try:
+        gameid = post_data['gameid']
+        review = post_data['review']
+    except:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    if my_database.add_review(uid, gameid, review):
+        return {'status': 'ok'}
+    else:
+        return {'status': 'error', 'message': 'Failed to add review.'}
+    
+
+@app.route('/api/game-reviews-delete', methods=['POST'])
+def game_reviews_delete():
+    if 'uid' not in session:
+        return {'status': 'error', 'message': 'Login required.'}
+    uid = session['uid']
+    post_data = request.get_json()
+    try:
+        gameid = post_data['gameid']
+        review = post_data['review']
+    except:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    if my_database.delete_review(uid, gameid, review):
+        return {'status': 'ok'}
+    else:
+        return {'status': 'error', 'message': 'Failed to delete review.'}
+    
+
+@app.route('/api/game-reviews-update', methods=['POST'])
+def game_reviews_update():
+    if 'uid' not in session:
+        return {'status': 'error', 'message': 'Login required.'}
+    uid = session['uid']
+    post_data = request.get_json()
+    try:
+        gameid = post_data['gameid']
+        new_review = post_data['new_review']
+    except:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    if my_database.edit_review(uid, gameid, review=new_review):
+        return {'status': 'ok'}
+    else:
+        return {'status': 'error', 'message': 'Failed to update review.'}
 
 
 if __name__ == '__main__':
