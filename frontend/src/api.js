@@ -57,6 +57,31 @@ const apis = {
         },
         enableMock: false,
     },
+    getFavoriteGames: {
+        url: '/favorite-games',
+        method: 'get',
+        mock: {
+            status: 'ok',
+            data: [],
+        },
+        enableMock: false,
+    },
+    addFavoriteGame: {
+        url: '/favorite-games-add',
+        method: 'post',
+        mock: {
+            status: 'ok',
+        },
+        enableMock: false,
+    },
+    deleteFavoriteGame: {
+        url: '/favorite-games-delete',
+        method: 'post',
+        mock: {
+            status: 'ok',
+        },
+        enableMock: false,
+    },
 }
 
 if (enableMock) {

@@ -27,7 +27,7 @@ function Header({ currentPage, setCurrentPage, user }) {
 
     const items = [
         {
-            label: <Typography.Text strong style={{ fontSize: '17px' }}>My Account</Typography.Text>,
+            label: (<div onClick={() => setCurrentPage('account')}><Typography.Text strong style={{ fontSize: '17px' }}>My Account</Typography.Text></div>),
             key: 'myAccount',
             icon: <UserOutlined />
         },

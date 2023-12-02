@@ -29,6 +29,7 @@ export const success = (m) => {
 export const processSearchResult = (data) => {
     const processedResult = data.map(item => {
         return {
+            gameid: item[0],
             title: item[2],
             description: 'Released on: ' + item[4],
             content: item[24],

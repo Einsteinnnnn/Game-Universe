@@ -29,7 +29,8 @@ def login():
         return {'status': 'error', 'message': 'Invalid request.'}
     check = my_database.user_login(username, password)
     if check:
-        session['username'] = username
+        uid = my_database.username_check(username)[0][0]
+        session['uid'] = uid
         return {'status': 'ok'}
     else:
         return {'status': 'error', 'message': 'Invalid username or password.'}
@@ -37,16 +38,16 @@ def login():
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
-    session.pop('username', None)
+    session.pop('uid', None)
     return {'status': 'ok'}
 
 
 @app.route('/api/user', methods=['GET'])
 def user_info():
-    if 'username' not in session:
+    if 'uid' not in session:
         return {'status': 'error', 'message': 'Login required.'}
-    username = session['username']
-    result = my_database.username_check(username)
+    uid = session['uid']
+    result = my_database.get_userinfo(uid)
     if result:
         return {'status': 'ok', 'data': result}
     else:
@@ -106,6 +107,50 @@ def advanced_search():
         return {'status': 'ok', 'data': result}
     else:
         return {'status': 'ok', 'data': []}
+
+
+@app.route('/api/favorite-games', methods=['GET'])
+def favorite_games():
+    if 'uid' not in session:
+        return {'status': 'error', 'message': 'Login required.'}
+    uid = session['uid']
+    result = my_database.get_userfavorite(uid)
+    if result:
+        return {'status': 'ok', 'data': result}
+    else:
+        return {'status': 'ok', 'data': []}
+    
+
+@app.route('/api/favorite-games-add', methods=['POST'])
+def favorite_games_add():
+    if 'uid' not in session:
+        return {'status': 'error', 'message': 'Login required.'}
+    uid = session['uid']
+    post_data = request.get_json()
+    try:
+        gameid = post_data['gameid']
+    except:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    if my_database.add_favorite(uid, gameid):
+        return {'status': 'ok'}
+    else:
+        return {'status': 'error', 'message': 'Failed to add favorite game.'}
+    
+
+@app.route('/api/favorite-games-delete', methods=['POST'])
+def favorite_games_delete():
+    if 'uid' not in session:
+        return {'status': 'error', 'message': 'Login required.'}
+    uid = session['uid']
+    post_data = request.get_json()
+    try:
+        gameid = post_data['gameid']
+    except:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    if my_database.delete_favorite(uid, gameid):
+        return {'status': 'ok'}
+    else:
+        return {'status': 'error', 'message': 'Failed to delete favorite game.'}
 
 
 if __name__ == '__main__':

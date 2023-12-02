@@ -1,5 +1,7 @@
-.Footer{
-    margin-top: 100px;
+.Footer {
+    margin-top: 120px;
+    height: 90px;
     background-color: #768cb419;
     width: 100%;
+    z-index: 9999;
 }
