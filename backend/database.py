@@ -182,11 +182,8 @@ class MyDatabase:
 
     def call_procedure(self):
         q = "CALL Return_TOP_and_BOT_10"
-        result = self.execute(q)
-        if result:
-            q = "SELECT * FROM return_TOP"
-            return self.query(q)
-        return False
+        result = self.query(q)
+        return result
 
     def create_procedure(self):
         p = "DROP PROCEDURE IF EXISTS Return_TOP_and_BOT_10"
@@ -241,11 +238,11 @@ class MyDatabase:
             REPEAT
                 FETCH TOPcursor INTO gameid, numUsers;
                 IF numUsers < averageTOP THEN
-                    INSERT INTO return_TOP VALUES (gameid, "popular, but yet not so popular");
+                    INSERT IGNORE INTO return_TOP VALUES (gameid, "popular, but yet not so popular");
                 ELSEIF numUsers = averageTOP THEN
-                    INSERT INTO return_TOP VALUES (gameid, "popular");
+                    INSERT IGNORE INTO return_TOP VALUES (gameid, "popular");
                 ELSEIF numUsers > averageTOP THEN
-                    INSERT INTO return_TOP VALUES (gameid, "popular, and very popular");
+                    INSERT IGNORE INTO return_TOP VALUES (gameid, "popular, and very popular");
                 END IF;
             UNTIL done END REPEAT;
             CLOSE TOPcursor;
@@ -258,11 +255,11 @@ class MyDatabase:
             REPEAT
                 FETCH BOTcursor INTO gameid, numUsers;
                 IF numUsers < averageBOT THEN
-                    INSERT INTO return_BOT VALUES (gameid, "very not popular");
+                    INSERT IGNORE INTO return_BOT VALUES (gameid, "very not popular");
                 ELSEIF numUsers = averageBOT THEN
-                    INSERT INTO return_BOT VALUES (gameid, "not popular");
+                    INSERT IGNORE INTO return_BOT VALUES (gameid, "not popular");
                 ELSEIF numUsers > averageBOT THEN
-                    INSERT INTO return_BOT VALUES (gameid, "not popular, but not yet not very popular");
+                    INSERT IGNORE INTO return_BOT VALUES (gameid, "not popular, but not yet not very popular");
                 END IF;
             UNTIL done END REPEAT;
             CLOSE BOTcursor;
@@ -476,7 +473,7 @@ if __name__=="__main__":
     # print(self.get_gameinfo(989898))
     # q = "SELECT * FROM Developer WHERE developername = 'developer for test'"
     # print(self.query(q))
-    db.create_procedure()
+    print(db.create_procedure())
     print(db.call_procedure())
     
     
