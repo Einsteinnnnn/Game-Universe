@@ -208,17 +208,17 @@ class MyDatabase:
             DROP TABLE IF EXISTS TopGames, BotGames, return_TOP, return_BOT;
 
             CREATE TABLE TopGames AS
-                SELECT gameid, COUNT(DISTINCT userid) AS numUsers 
+                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu 
                 FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
-                GROUP BY gameid
-                ORDER BY numUsers DESC
+                GROUP BY gid
+                ORDER BY nu DESC
                 LIMIT 10;
 
             CREATE TABLE BotGames AS
-                SELECT gameid, COUNT(DISTINCT userid) AS numUsers 
+                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu 
                 FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
-                GROUP BY gameid
-                ORDER BY numUsers ASC
+                GROUP BY gid
+                ORDER BY nu ASC
                 LIMIT 10;
 
             SET averageTOP = (SELECT AVG(numUsers) FROM TopGames);
@@ -352,7 +352,7 @@ class MyDatabase:
                                 FROM Publish p JOIN Gameinfo g ON p.gameid = g.queryid
                                 WHERE p.publishername = new.publishername AND metacritic <> 0
                                 GROUP BY p.publishername);
-                UPDATE Developer SET avgmetacritic = @new_avg WHERE publishername = new.publishername;
+                UPDATE Publisher SET avgmetacritic = @new_avg WHERE publishername = new.publishername;
             END IF;
         END
         """
