@@ -164,8 +164,82 @@ class MyDatabase:
         q = "DELETE FROM Userfavorite WHERE userid = {} AND gameid = {}".format(userid, gameid)
         return self.execute(q)
 
+    def valid_gameid(self):
+        q = "SELECT MAX(queryid) FROM Gameinfo"
+        return self.query(q)[0][0] + 1
+    
+    def valid_dev(self, developername):
+        q = "SELECT * FROM Developer WHERE developername = '{}'".format(developername)
+        result = self.query(q)
+        if result:
+            return result
+        else:
+            q = "INSERT INTO Developer VALUES('{}', 0, 0)".format(developername)
+            return self.execute(q)
+    
+    def valid_pub(self, publishername):
+        q = "SELECT * FROM Publisher WHERE publishername = '{}'".format(publishername)
+        result = self.query(q)
+        if result:
+            return result
+        else:
+            q = "INSERT INTO Publisher VALUES('{}', 0, 0)".format(publishername)
+            return self.execute(q)
+
+    def add_newgame(self, gamename, developername, publishername, headerimage, genre, platform, languages):
+        self.valid_dev(developername)
+        self.valid_pub(publishername)
+        match genre:
+            case "nongame":
+                g = "genreisnongame"
+            case "indie":
+                g = "genreisindie"
+            case "action":
+                g = "genreisaction"
+            case "adventure":
+                g = "genreisadventure"
+            case "casual":
+                g = "genreiscasual"
+            case "strategy":
+                g = "genreisstrategy"
+            case "rpg":
+                g = "genreisrpg"
+            case "simulation":
+                g = "genreissimulation"
+            case "sports":
+                g = "genreissports"
+            case "racing":
+                g = "genreisracing"
+            case "earlyaccess":
+                g = "genreisearlyaccess"
+            case "freetoplay":
+                g = "genreisfreetoplay"
+        match platform:
+            case "windows":
+                p = "platformwindows"
+            case "linux":
+                p = "platformlinux"
+            case "mac":
+                p = "platformmac"
+        gameid = self.valid_gameid()
+        q = """INSERT INTO Gameinfo(queryid, responseid, queryname, responsename, headerimage, supportedlanguages, {}, {}) 
+            VALUES('{}','{}','{}','{}','{}','{}', 1, 1)""".format(g, p, gameid, gameid, gamename, gamename, headerimage, languages)
+        self.execute(q)
+        q1 = "INSERT INTO Develop VALUES('{}', {})".format(developername, gameid)
+        q2 = "INSERT INTO Publish VALUES('{}', {})".format(publishername, gameid)
+        return self.execute(q1) and self.execute(q2)
+
+
     def get_gameinfo(self, queryid):
         q = "SELECT * FROM Gameinfo WHERE queryid = {}".format(queryid)
+        return self.query(q)
+    
+    def get_gamedev(self, queryid):
+        q = "SELECT d.developername, gamecount, avgmetacritic FROM Develop d JOIN Developer dr ON d.developername = dr.developername WHERE gameid = {}".format(queryid)
+        return self.query(q)
+    
+    def get_gamepub(self, queryid):
+        q = "SELECT p.publishername, gamecount, avgmetacritic FROM Publish p JOIN Publisher pr ON p.publishername = pr.publishername WHERE gameid = {}".format(queryid)
         return self.query(q)
 
     def get_gamereview(self, queryid):
@@ -466,7 +540,18 @@ if __name__=="__main__":
     # print(self.get_gameinfo(989898))
     # q = "SELECT * FROM Developer WHERE developername = 'developer for test'"
     # print(self.query(q))
-    print(db.create_procedure())
-    print(db.call_procedure())
+    # print(db.create_procedure())
+    # print(db.call_procedure())
+    # print(db.get_gamepub(1))
+    # db.valid_dev("queen")
+    # db.valid_pub("queen")
+    # q = "SELECT * FROM Developer WHERE developername = 'queen'"
+    # print(db.query(q))
+    # q = "SELECT * FROM Publisher WHERE publishername = 'queen'"
+    # print(db.query(q))
+    db.add_newgame("Right eye is for remembering you", "king", "king", "https://th.bing.com/th/id/R.4772001b467b480cd3579e97bafb352f?rik=gj148TFTcf7gtA&riu=http%3a%2f%2fwww.hdwallpaper.nu%2fwp-content%2fuploads%2f2015%2f02%2fFunny-Cat-Hidden.jpg&ehk=U6Cjoa2RqEoCWgZC2srK9CGyrzRrc1MX%2fh9lzuae7K0%3d&risl=&pid=ImgRaw&r=0", "casual", "windows", "Chinese")
+    print(db.get_gameinfo(989900))
+    print(db.get_gamedev(989900))
+    print(db.get_gamepub(989900))
     
     
