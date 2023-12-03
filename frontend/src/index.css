@@ -17,3 +17,7 @@ code {
 html {
   height: 100%;
 }
+
+::selection {
+  background-color: #4260A3 !important;
+}

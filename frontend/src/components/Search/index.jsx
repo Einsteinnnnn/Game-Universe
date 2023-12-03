@@ -14,7 +14,7 @@ const IconText = ({ icon, text }) => (
     </Space>
 );
 
-function Search({ currentPage, setCurrentPage, user, searchResult, setSearchResult, searchKeyword, setSearchKeyword }) {
+function Search({ currentPage, setCurrentPage, user, searchResult, setSearchResult, searchKeyword, setSearchKeyword, setDetailGame }) {
 
     const [advancedSearch, setAdvancedSearch] = React.useState(false);
 
@@ -241,7 +241,7 @@ function Search({ currentPage, setCurrentPage, user, searchResult, setSearchResu
                                 }
                             >
                                 <List.Item.Meta
-                                    title={<a href={true} onClick={() => { setCurrentPage('detail') }}>{item.title}</a>}
+                                    title={<a href={true} onClick={() => { setDetailGame(item.gameid); setCurrentPage('detail') }}>{item.title}</a>}
                                     description={item.description}
                                 />
                                 <Typography.Paragraph ellipsis={{ rows: 2, expandable: false, symbol: 'more' }}>

@@ -200,8 +200,8 @@ class MyDatabase:
             DECLARE done INT DEFAULT 0;
 
             -- 声明游标和异常处理器
-            DECLARE TOPcursor CURSOR FOR SELECT gameid, numUsers FROM TopGames;
-            DECLARE BOTcursor CURSOR FOR SELECT gameid, numUsers FROM BotGames;
+            DECLARE TOPcursor CURSOR FOR SELECT gid, nu FROM TopGames;
+            DECLARE BOTcursor CURSOR FOR SELECT gid, nu FROM BotGames;
             DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
             -- 创建或删除临时表
@@ -221,29 +221,22 @@ class MyDatabase:
                 ORDER BY nu ASC
                 LIMIT 10;
 
-            SET averageTOP = (SELECT AVG(numUsers) FROM TopGames);
-            SET averageBOT = (SELECT AVG(numUsers) FROM BotGames);
+            SET averageTOP = (SELECT AVG(TopGames.nu) FROM TopGames);
+            SET averageBOT = (SELECT AVG(BotGames.nu) FROM BotGames);
 
             CREATE TABLE return_TOP(
-                gameid INT,
+                top_id INT,
                 numUsers_indicator VARCHAR(255)
             );
             CREATE TABLE return_BOT(
-                gameid INT,
+                bot_id INT,
                 numUsers_indicator VARCHAR(255)
             );
-
             -- 处理 TOP 游标
             OPEN TOPcursor;
             REPEAT
                 FETCH TOPcursor INTO gameid, numUsers;
-                IF numUsers < averageTOP THEN
-                    INSERT IGNORE INTO return_TOP VALUES (gameid, "popular, but yet not so popular");
-                ELSEIF numUsers = averageTOP THEN
-                    INSERT IGNORE INTO return_TOP VALUES (gameid, "popular");
-                ELSEIF numUsers > averageTOP THEN
-                    INSERT IGNORE INTO return_TOP VALUES (gameid, "popular, and very popular");
-                END IF;
+                INSERT INTO return_TOP VALUES (1, "1");
             UNTIL done END REPEAT;
             CLOSE TOPcursor;
 
@@ -258,7 +251,7 @@ class MyDatabase:
                     INSERT IGNORE INTO return_BOT VALUES (gameid, "very not popular");
                 ELSEIF numUsers = averageBOT THEN
                     INSERT IGNORE INTO return_BOT VALUES (gameid, "not popular");
-                ELSEIF numUsers > averageBOT THEN
+                ELSE
                     INSERT IGNORE INTO return_BOT VALUES (gameid, "not popular, but not yet not very popular");
                 END IF;
             UNTIL done END REPEAT;

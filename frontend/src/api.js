@@ -82,6 +82,65 @@ const apis = {
         },
         enableMock: false,
     },
+    trending: {
+        url: '/recommend',
+        method: 'get',
+        mock: {
+            status: 'ok',
+            data: {top:[], bottom:[]},
+        },
+        enableMock: false,
+    },
+    addGame: {
+        url: '/game-add',
+        method: 'post',
+        mock: {
+            status: 'ok',
+        },
+        enableMock: false,
+    },
+    getComments: {
+        url: '/game-reviews',
+        method: 'get',
+        mock: {
+            status: 'ok',
+            data: [],
+        },
+        enableMock: false,
+    },
+    addComment: {
+        url: '/game-reviews-add',
+        method: 'post',
+        mock: {
+            status: 'ok',
+        },
+        enableMock: false,
+    },
+    editComment: {
+        url: '/game-reviews-update',
+        method: 'post',
+        mock: {
+            status: 'ok',
+        },
+        enableMock: false,
+    },
+    deleteComment: {
+        url: '/game-reviews-delete',
+        method: 'post',
+        mock: {
+            status: 'ok',
+        },
+        enableMock: false,
+    },
+    getGameInfo: {
+        url: '/game',
+        method: 'get',
+        mock: {
+            status: 'ok',
+            data: {},
+        },
+        enableMock: false,
+    },
 }
 
 if (enableMock) {

@@ -18,6 +18,7 @@ function Main() {
     const [user, setUser] = React.useState(null);
     const [searchResult, setSearchResult] = React.useState([]);
     const [searchKeyword, setSearchKeyword] = React.useState('');
+    const [detailGame, setDetailGame] = React.useState(null);
 
     const setCurrentPage = (page) => {
         window.scrollTo(0, 0);
@@ -48,11 +49,11 @@ function Main() {
                 {currentPage !== 'login' && currentPage !== 'register' && <>
                     <Header currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} />
                 </>}
-                {currentPage === 'home' && <Home currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} setSearchResult={setSearchResult} setSearchKeyword={setSearchKeyword} />}
-                {currentPage === 'search' && <Search currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} searchResult={searchResult} setSearchResult={setSearchResult} searchKeyword={searchKeyword} setSearchKeyword={setSearchKeyword} />}
+                {currentPage === 'home' && <Home currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} setSearchResult={setSearchResult} setSearchKeyword={setSearchKeyword} setDetailGame={setDetailGame}/>}
+                {currentPage === 'search' && <Search currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} searchResult={searchResult} setSearchResult={setSearchResult} searchKeyword={searchKeyword} setSearchKeyword={setSearchKeyword}  setDetailGame={setDetailGame}/>}
                 {currentPage === 'account' && <Account currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} />}
-                {currentPage === 'favorite' && <Favorite currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} />}
-                {currentPage === 'detail' && <Detail currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} />}
+                {currentPage === 'favorite' && <Favorite currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} setDetailGame={setDetailGame}/>}
+                {currentPage === 'detail' && <Detail currentPage={currentPage} setCurrentPage={setCurrentPage} user={user} detailGame={detailGame}/>}
             </div>
 
             {currentPage !== 'login' && currentPage !== 'register' && <>

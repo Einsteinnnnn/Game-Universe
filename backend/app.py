@@ -53,7 +53,7 @@ def user_info():
         return {'status': 'ok', 'data': result}
     else:
         return {'status': 'error', 'message': 'Invalid username.'}
-    
+
 
 @app.route('/api/register', methods=['POST'])
 def register():
@@ -73,7 +73,7 @@ def register():
             return {'status': 'ok'}
         else:
             return {'status': 'error', 'message': 'Failed to register.'}
-        
+
 
 @app.route('/api/basic-search', methods=['GET'])
 def basic_search():
@@ -86,7 +86,7 @@ def basic_search():
             return {'status': 'ok', 'data': []}
     else:
         return {'status': 'error', 'message': 'Invalid request.'}
-    
+
 
 @app.route('/api/advanced-search', methods=['POST'])
 def advanced_search():
@@ -99,11 +99,12 @@ def advanced_search():
         required_age = post_data['required_age']
         metacritic_lowerbnd = post_data['metacritic_lowerbnd']
         steam_spy_owners = post_data['steamspyowners']
-        price_lower = post_data['price'][0]*10
-        price_upper = post_data['price'][1]*10
+        price_lower = post_data['price'][0] * 10
+        price_upper = post_data['price'][1] * 10
     except:
         return {'status': 'error', 'message': 'Invalid request.'}
-    result = my_database.search_by_filter(genre, category, os_platforms, language, required_age, metacritic_lowerbnd, steam_spy_owners, price_lower, price_upper)
+    result = my_database.search_by_filter(genre, category, os_platforms, language, required_age, metacritic_lowerbnd,
+                                          steam_spy_owners, price_lower, price_upper)
     if result:
         return {'status': 'ok', 'data': result}
     else:
@@ -120,7 +121,7 @@ def favorite_games():
         return {'status': 'ok', 'data': result}
     else:
         return {'status': 'ok', 'data': []}
-    
+
 
 @app.route('/api/favorite-games-add', methods=['POST'])
 def favorite_games_add():
@@ -133,10 +134,10 @@ def favorite_games_add():
     except:
         return {'status': 'error', 'message': 'Invalid request.'}
     if my_database.add_favorite(uid, gameid):
-        return {'status': 'ok'}
+        return {'status': 'ok', 'message': 'Successfully added favorite game.'}
     else:
-        return {'status': 'error', 'message': 'Failed to add favorite game.'}
-    
+        return {'status': 'ok', 'message': 'This game is already in your favorite list.'}
+
 
 @app.route('/api/favorite-games-delete', methods=['POST'])
 def favorite_games_delete():
@@ -152,7 +153,7 @@ def favorite_games_delete():
         return {'status': 'ok'}
     else:
         return {'status': 'error', 'message': 'Failed to delete favorite game.'}
-    
+
 
 @app.route('/api/game-info', methods=['GET'])
 def game_info():
@@ -165,7 +166,7 @@ def game_info():
             return {'status': 'error', 'message': 'Invalid gameid.'}
     else:
         return {'status': 'error', 'message': 'Invalid request.'}
-    
+
 
 @app.route('/api/game-reviews', methods=['GET'])
 def game_reviews():
@@ -178,7 +179,7 @@ def game_reviews():
             return {'status': 'ok', 'data': []}
     else:
         return {'status': 'error', 'message': 'Invalid request.'}
-    
+
 
 @app.route('/api/game-reviews-add', methods=['POST'])
 def game_reviews_add():
@@ -195,7 +196,7 @@ def game_reviews_add():
         return {'status': 'ok'}
     else:
         return {'status': 'error', 'message': 'Failed to add review.'}
-    
+
 
 @app.route('/api/game-reviews-delete', methods=['POST'])
 def game_reviews_delete():
@@ -212,7 +213,7 @@ def game_reviews_delete():
         return {'status': 'ok'}
     else:
         return {'status': 'error', 'message': 'Failed to delete review.'}
-    
+
 
 @app.route('/api/game-reviews-update', methods=['POST'])
 def game_reviews_update():
@@ -229,6 +230,108 @@ def game_reviews_update():
         return {'status': 'ok'}
     else:
         return {'status': 'error', 'message': 'Failed to update review.'}
+
+
+@app.route('/api/recommend', methods=['GET'])
+def recommend():
+    # temporary, waiting for database
+    result = my_database.get_gameinfo(39140)
+    if result:
+        return {'status': 'ok', 'data': {'top': result * 10, 'bottom': result * 10}}
+    else:
+        return {'status': 'ok', 'data': {'top': [], 'bottom': []}}
+
+
+@app.route('/api/game-add', methods=['POST'])
+def game_add():
+    # temporary, waiting for database
+    if 'uid' not in session:
+        return {'status': 'error', 'message': 'Login required.'}
+    uid = session['uid']
+    username = my_database.get_userinfo(uid)[0][1]
+    if username != 'admin':
+        return {'status': 'error', 'message': 'Permission denied.'}
+    post_data = request.get_json()
+    try:
+        name = post_data['name']
+        developer = post_data['developer']
+        publisher = post_data['publisher']
+        genre = post_data['genre']
+        img = post_data['img']
+        os_platforms = ' '.join(post_data['platform'])
+        language = ' '.join(post_data['language'])
+        print(name, developer, publisher, genre, img, os_platforms, language)
+    except:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    return {'status': 'ok'}
+
+
+@app.route('/api/game', methods=['GET'])
+def game():
+    def build_platform_string(win, mac, linux):
+        result = []
+        if win:
+            result.append('Windows')
+        if mac:
+            result.append('Mac')
+        if linux:
+            result.append('Linux')
+        return '/'.join(result)
+
+    def build_genre_string(nongame, indie, action, adventure, casual, strategy, rpg, simulation, sports, racing):
+        result = []
+        if nongame:
+            result.append('Nongame')
+        if indie:
+            result.append('Indie')
+        if action:
+            result.append('Action')
+        if adventure:
+            result.append('Adventure')
+        if casual:
+            result.append('Casual')
+        if strategy:
+            result.append('Strategy')
+        if rpg:
+            result.append('RPG')
+        if simulation:
+            result.append('Simulation')
+        if racing:
+            result.append('Racing')
+        if sports:
+            result.append('Sports')
+        return ', '.join(result)
+
+    gameid = request.args.get('gameid')
+    try:
+        gameid = int(gameid)
+    except:
+        return {'status': 'error', 'message': 'Invalid request.'}
+    if gameid:
+        print(gameid)
+        result = my_database.get_gameinfo(gameid)[0]
+        print(result)
+        if result:
+            return {'status': 'ok', 'data': {
+                'developer': '',
+                'publisher': '',
+                'supported_platform': build_platform_string(result[65], result[67], result[66]),
+                'supported_language': result[32],
+                'genre': build_genre_string(result[40], result[41], result[42], result[43], result[44], result[45], result[46], result[47], result[48], result[49]),
+                'age_restriction': str(result[5]) + '+' if result[5] else 'No restriction',
+                'description': result[24],
+                'img': result[30],
+                'original_price': result[20],
+                'current_price': result[21],
+                'name': result[2],
+                'released': result[4],
+                'meta_score': result[8] if result[8] else 'N/A',
+                'recommendation': result[11] if result[11] else 'N/A',
+            }}
+        else:
+            return {'status': 'error', 'message': 'Invalid gameid.'}
+    else:
+        return {'status': 'error', 'message': 'Invalid request.'}
 
 
 if __name__ == '__main__':

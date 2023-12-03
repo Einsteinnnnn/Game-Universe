@@ -6,7 +6,7 @@ import apis from '../../api';
 import { handleResponse, loading, processSearchResult, success } from '../../utils';
 
 
-const Favorite = ({ currentPage, setCurrentPage, user }) => {
+const Favorite = ({ currentPage, setCurrentPage, user, setDetailGame }) => {
 
     const [favoriteGames, setFavoriteGames] = React.useState(null);
 
@@ -50,7 +50,7 @@ const Favorite = ({ currentPage, setCurrentPage, user }) => {
                                 actions={[<Button onClick={() => {deleteFavorite(item.gameid)}}>delete</Button>]}
                             >
                                 <List.Item.Meta
-                                    title={<a href={true} onClick={() => { setCurrentPage('detail') }}>{item.title}</a>}
+                                    title={<a href={true} onClick={() => { setDetailGame(item.gameid); setCurrentPage('detail') }}>{item.title}</a>}
                                     description={<Typography.Text ellipsis={{ rows: 3 }}>{item.content}</Typography.Text>}
                                 />
                             </List.Item>
