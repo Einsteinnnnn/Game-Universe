@@ -81,8 +81,11 @@ const Detail = ({ currentPage, setCurrentPage, user, detailGame }) => {
     };
 
     const editComment = () => {
+        if (newComment === null) {
+            success('Review updated!');
+        }
         loading('Please wait...');
-        backend.request(apis.editComment, { gameid: detailGame, review: newComment }, (response) => {
+        backend.request(apis.editComment, { gameid: detailGame, new_review: newComment }, (response) => {
             if (handleResponse(response)) {
                 success('Review updated!');
                 window.scrollTo(0, 0);
