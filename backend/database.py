@@ -5,6 +5,35 @@ class MyDatabase:
     database_name = "project"
     pool_size = 5
     _pool = None
+    genre_name_map = {
+        "nongame": "genreisnongame",
+        "indie": "genreisindie",
+        "action": "genreisaction",
+        "adventure": "genreisadventure",
+        "casual": "genreiscasual",
+        "strategy": "genreisstrategy",
+        "rpg": "genreisrpg",
+        "simulation": "genreissimulation",
+        "sports": "genreissports",
+        "racing": "genreisracing",
+        "earlyaccess": "genreisearlyaccess",
+        "freetoplay": "genreisfreetoplay"
+    }
+    category_name_map = {
+        "singleplayer": "categorysingleplayer",
+        "multiplayer": "categorymultiplayer",
+        "coop": "categorycoop",
+        "mmo": "categorymmo",
+        "inapppurchase": "categoryinapppurchase",
+        "includesrcsdk": "categoryincludesrcsdk",
+        "includeleveleditor": "categoryincludeleveleditor",
+        "vrsupport": "categoryvrsupport"
+    }
+    platform_name_map = {
+        "windows": "platformwindows",
+        "linux": "platformlinux",
+        "mac": "platformmac"
+    }
 
     def __init__(self, username, password):
         self.username = username
@@ -85,55 +114,12 @@ class MyDatabase:
     
     def search_by_filter(self, genre, category, os_platforms, languages, required_age, metacritic_lowerbnd, steamspyowners_lowerbnd, price_lowerbnd, price_upperbnd):
         q  = "SELECT * FROM Gameinfo WHERE"
-        match genre:
-            case "nongame":
-                q += " genreisnongame = 1 AND"
-            case "indie":
-                q += " genreisindie = 1 AND"
-            case "action":
-                q += " genreisaction = 1 AND"
-            case "adventure":
-                q += " genreisadventure = 1 AND"
-            case "casual":
-                q += " genreiscasual = 1 AND"
-            case "strategy":
-                q += " genreisstrategy = 1 AND"
-            case "rpg":
-                q += " genreisrpg = 1 AND"
-            case "simulation":
-                q += " genreissimulation = 1 AND"
-            case "sports":
-                q += " genreissports = 1 AND"
-            case "racing":
-                q += " genreisracing = 1 AND"
-            case "earlyaccess":
-                q += " genreisearlyaccess = 1 AND"
-            case "freetoplay":
-                q += " genreisfreetoplay = 1 AND"
-        match category:
-            case "singleplayer":
-                q += " categorysingleplayer = 1 AND"
-            case "multiplayer":
-                q += " categorymultiplayer = 1 AND"
-            case "coop":
-                q += " categorycoop = 1 AND"
-            case "mmo":
-                q += " categorymmo = 1 AND"
-            case "inapppurchase":
-                q += " categoryinapppurchase = 1 AND"
-            case "includesrcsdk":
-                q += " categoryincludesrcsdk = 1 AND"
-            case "includeleveleditor":
-                q += " categoryincludeleveleditor = 1 AND"
-            case "vrsupport":
-                q += " categoryvrsupport = 1 AND"
-        match os_platforms:
-            case "windows":
-                q += " platformwindows = 1 AND"
-            case "linux":
-                q += " platformlinux = 1 AND"
-            case "mac":
-                q += " platformmac = 1 AND"
+        if genre in self.genre_name_map:
+            q += " {} = 1 AND".format(self.genre_name_map[genre])
+        if category in self.category_name_map:
+            q += " {} = 1 AND".format(self.category_name_map[category])
+        if os_platforms in self.platform_name_map:
+            q += " {} = 1 AND".format(self.platform_name_map[os_platforms])
         if languages != "All":
             q += " supportedlanguages LIKE '%{}%' AND".format(languages)
         q += " requiredage >= {} AND".format(required_age)
@@ -189,38 +175,8 @@ class MyDatabase:
     def add_newgame(self, gamename, developername, publishername, headerimage, genre, platform, languages):
         self.valid_dev(developername)
         self.valid_pub(publishername)
-        match genre:
-            case "nongame":
-                g = "genreisnongame"
-            case "indie":
-                g = "genreisindie"
-            case "action":
-                g = "genreisaction"
-            case "adventure":
-                g = "genreisadventure"
-            case "casual":
-                g = "genreiscasual"
-            case "strategy":
-                g = "genreisstrategy"
-            case "rpg":
-                g = "genreisrpg"
-            case "simulation":
-                g = "genreissimulation"
-            case "sports":
-                g = "genreissports"
-            case "racing":
-                g = "genreisracing"
-            case "earlyaccess":
-                g = "genreisearlyaccess"
-            case "freetoplay":
-                g = "genreisfreetoplay"
-        match platform:
-            case "windows":
-                p = "platformwindows"
-            case "linux":
-                p = "platformlinux"
-            case "mac":
-                p = "platformmac"
+        g = self.genre_name_map[genre]
+        p = self.platform_name_map[platform]
         gameid = self.valid_gameid()
         q = """INSERT INTO Gameinfo(queryid, responseid, queryname, responsename, headerimage, supportedlanguages, {}, {}) 
             VALUES('{}','{}','{}','{}','{}','{}', 1, 1)""".format(g, p, gameid, gameid, gamename, gamename, headerimage, languages)
