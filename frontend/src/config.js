@@ -5,8 +5,12 @@ const allConfig = {
         backendUrl: 'http://localhost:3000/api',
         enableMock: true,
     },
-    prod: {
+    staging: {
         backendUrl: 'http://127.0.0.1:5000/api',
+        enableMock: false,
+    },
+    prod: {
+        backendUrl: 'http://gameuniverse.site/api',
         enableMock: false,
     },
 }

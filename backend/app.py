@@ -1,16 +1,23 @@
 import re
 import sys
 from flask import Flask, request, session
+from config import env
 from datetime import timedelta
 from database import MyDatabase
 
-app = Flask(__name__, static_folder='static', static_url_path='/')
+if env == 'dev' or env == 'staging':
+    app = Flask(__name__, static_folder='static', static_url_path='/')
+else:
+    app = Flask(__name__, static_folder='static_prod', static_url_path='/')
 app.config['SECRET_KEY'] = 'GameUniverse'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=7)
 
-if len(sys.argv) < 2:
-    sys.exit('Include netid as database username. Usage: $ python app.py [netid]')
-my_database = MyDatabase(username=sys.argv[1], password='123456')
+if env == 'dev' or env == 'staging':
+    if len(sys.argv) < 2:
+        sys.exit('Include netid as database username. Usage: $ python app.py [netid]')
+    my_database = MyDatabase(username=sys.argv[1], password='123456')
+else:
+    my_database = MyDatabase(username='liyi3', password='123456')
 if not my_database.is_connected():
     sys.exit('Failed to connect to database. Check your username and password.')
 
