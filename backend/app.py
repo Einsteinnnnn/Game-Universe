@@ -218,6 +218,7 @@ def game_reviews_delete():
     try:
         gameid = post_data['gameid']
         review = post_data['review']
+        review = review.replace("'", "''")
     except:
         return {'status': 'error', 'message': 'Invalid request.'}
     if my_database.delete_review(uid, gameid, review):
@@ -235,6 +236,7 @@ def game_reviews_update():
     try:
         gameid = post_data['gameid']
         new_review = post_data['new_review']
+        new_review = new_review.replace("'", "''")
     except:
         return {'status': 'error', 'message': 'Invalid request.'}
     if my_database.edit_review(uid, gameid, review=new_review):
