@@ -241,17 +241,26 @@ def game_reviews_update():
 
 @app.route('/api/recommend', methods=['GET'])
 def recommend():
+    def sort_and_classify(data):
+        top, bottom = [], []
+        top_indicator = ['very popular!!!', 'popular', 'popular but not so much~']
+        bottom_indicator = ['not popular, but not yet not very popular', 'not popular', 'very not popular']
+        for indicator in top_indicator:
+            top += [item for item in data if item[4] == indicator]
+        for indicator in bottom_indicator:
+            bottom += [item for item in data if item[4] == indicator]
+        return top, bottom
     # temporary, waiting for database
-    result = my_database.get_gameinfo(39140)
+    result = my_database.call_procedure()
+    result = sort_and_classify(result)
     if result:
-        return {'status': 'ok', 'data': {'top': result * 10, 'bottom': result * 10}}
+        return {'status': 'ok', 'data': {'top': result[0], 'bottom': result[1]}}
     else:
         return {'status': 'ok', 'data': {'top': [], 'bottom': []}}
 
 
 @app.route('/api/game-add', methods=['POST'])
 def game_add():
-    # temporary, waiting for database
     if 'uid' not in session:
         return {'status': 'error', 'message': 'Login required.'}
     uid = session['uid']
@@ -265,12 +274,15 @@ def game_add():
         publisher = post_data['publisher']
         genre = post_data['genre']
         img = post_data['img']
-        os_platforms = ' '.join(post_data['platform'])
+        os_platforms = post_data['platform'][0]
         language = ' '.join(post_data['language'])
-        print(name, developer, publisher, genre, img, os_platforms, language)
+        if my_database.add_newgame(name, developer, publisher,  img, genre, os_platforms, language):
+            return {'status': 'ok'}
+        else:
+            return {'status': 'error', 'message': 'Failed to add game.'}
     except:
         return {'status': 'error', 'message': 'Invalid request.'}
-    return {'status': 'ok'}
+    
 
 
 @app.route('/api/game', methods=['GET'])
@@ -308,6 +320,10 @@ def game():
         if sports:
             result.append('Sports')
         return ', '.join(result)
+    
+    def build_devpub_string(data):
+        result = ['{} ({}, {})'.format(item[0], item[1], item[2]) for item in data]
+        return ', '.join(result)
 
     gameid = request.args.get('gameid')
     try:
@@ -315,23 +331,23 @@ def game():
     except:
         return {'status': 'error', 'message': 'Invalid request.'}
     if gameid:
-        print(gameid)
         result = my_database.get_gameinfo(gameid)[0]
-        print(result)
+        developer = my_database.get_gamedev(gameid)
+        publisher = my_database.get_gamepub(gameid)
         if result:
             return {'status': 'ok', 'data': {
-                'developer': '',
-                'publisher': '',
+                'developer': build_devpub_string(developer) if developer else 'N/A',
+                'publisher': build_devpub_string(publisher) if publisher else 'N/A',
                 'supported_platform': build_platform_string(result[65], result[67], result[66]),
                 'supported_language': result[32],
                 'genre': build_genre_string(result[40], result[41], result[42], result[43], result[44], result[45], result[46], result[47], result[48], result[49]),
                 'age_restriction': str(result[5]) + '+' if result[5] else 'No restriction',
-                'description': result[24],
+                'description': result[24] if result[24] else 'This game is misterious and has no description.',
                 'img': result[30],
-                'original_price': result[20],
-                'current_price': result[21],
+                'original_price': result[20] if result[20] else 'N/A',
+                'current_price': result[21] if result[21] else 'N/A',
                 'name': result[2],
-                'released': result[4],
+                'released': result[4] if result[4] else 'N/A',
                 'meta_score': result[8] if result[8] else 'N/A',
                 'recommendation': result[11] if result[11] else 'N/A',
             }}

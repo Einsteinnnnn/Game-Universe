@@ -13,6 +13,28 @@ const IconText = ({ icon, text }) => (
     </Space>
 );
 
+const recommendTextMap = {
+    'very popular!!!': 'Timeless Classic',
+    'popular':'Global Craze',
+    'popular but not so much~': 'Mass Player Base',
+    'not popular': 'Cult Following',
+    'not popular, but not yet not very popular': 'Growing Fandom',
+    'very not popular': 'Hidden Gem',
+};
+
+
+const processTrendingResult = (data) => {
+    const processedResult = data.map(item => {
+        return {
+            gameid: item[0],
+            title: item[1],
+            content: item[2],
+            img: item[3],
+            recommendations: recommendTextMap[item[4]],
+        };
+    });
+    return processedResult;
+}
 
 function Home({ currentPage, setCurrentPage, user, setSearchResult, setSearchKeyword, setDetailGame }) {
 
@@ -22,8 +44,8 @@ function Home({ currentPage, setCurrentPage, user, setSearchResult, setSearchKey
         backend.request(apis.trending, {}, (res) => {
             if (handleResponse(res)) {
                 setTrendingData({
-                    top: processSearchResult(res.data.top),
-                    bottom: processSearchResult(res.data.bottom),
+                    top: processTrendingResult(res.data.top),
+                    bottom: processTrendingResult(res.data.bottom),
                 });
             }
         });
@@ -78,7 +100,7 @@ function Home({ currentPage, setCurrentPage, user, setSearchResult, setSearchKey
                                 <List.Item
                                     key={item.title}
                                     actions={[
-                                        <IconText icon={FireOutlined} text="156" key="list-vertical-star-o" />,
+                                        <IconText icon={FireOutlined} text={item.recommendations} key="list-vertical-star-o" />,
                                     ]}
                                     extra={
                                         <img
@@ -90,7 +112,6 @@ function Home({ currentPage, setCurrentPage, user, setSearchResult, setSearchKey
                                 >
                                     <List.Item.Meta
                                         title={<a href={true} onClick={() => { setDetailGame(item.gameid); setCurrentPage('detail') }}>{item.title}</a>}
-                                        description={<Typography.Text ellipsis={{ rows: 2, expandable: false, symbol: 'more' }}>{item.description}</Typography.Text>}
                                     />
                                     <Typography.Paragraph ellipsis={{ rows: 5, expandable: false, symbol: 'more' }}>{item.content}</Typography.Paragraph>
                                 </List.Item>
