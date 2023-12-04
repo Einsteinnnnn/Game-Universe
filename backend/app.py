@@ -140,9 +140,12 @@ def favorite_games_add():
         gameid = post_data['gameid']
     except:
         return {'status': 'error', 'message': 'Invalid request.'}
-    if my_database.add_favorite(uid, gameid):
-        return {'status': 'ok', 'message': 'Successfully added favorite game.'}
-    else:
+    try:
+        if my_database.add_favorite(uid, gameid):
+            return {'status': 'ok', 'message': 'Successfully added favorite game.'}
+        else:
+            return {'status': 'ok', 'message': 'This game is already in your favorite list.'}
+    except:
         return {'status': 'ok', 'message': 'This game is already in your favorite list.'}
 
 
