@@ -13,15 +13,6 @@ const IconText = ({ icon, text }) => (
     </Space>
 );
 
-const recommendTextMap = {
-    'very popular!!!': 'Timeless Classic',
-    'popular':'Global Craze',
-    'popular but not so much~': 'Mass Player Base',
-    'not popular': 'Cult Following',
-    'not popular, but not yet not very popular': 'Growing Fandom',
-    'very not popular': 'Hidden Gem',
-};
-
 
 const processTrendingResult = (data) => {
     const processedResult = data.map(item => {
@@ -30,7 +21,7 @@ const processTrendingResult = (data) => {
             title: item[1],
             content: item[2],
             img: item[3],
-            recommendations: recommendTextMap[item[4]],
+            recommendations: item[4],
         };
     });
     return processedResult;
@@ -94,7 +85,7 @@ function Home({ currentPage, setCurrentPage, user, setSearchResult, setSearchKey
                     <List
                         itemLayout="vertical"
                         size="large"
-                        dataSource={trendingData.top === null ? [{}, {}, {}] : trendingData.bottom}
+                        dataSource={trendingData.top === null ? [{}, {}, {}] : trendingData.top}
                         renderItem={(item) => (
                             <Skeleton loading={trendingData.top === null} active avatar>
                                 <List.Item
@@ -129,7 +120,7 @@ function Home({ currentPage, setCurrentPage, user, setSearchResult, setSearchKey
                                 <List.Item
                                     key={item.title}
                                     actions={[
-                                        <IconText icon={FireOutlined} text="156" key="list-vertical-star-o" />,
+                                        <IconText icon={FireOutlined} text={item.recommendations} key="list-vertical-star-o" />,
                                     ]}
                                     extra={
                                         <img
@@ -141,7 +132,6 @@ function Home({ currentPage, setCurrentPage, user, setSearchResult, setSearchKey
                                 >
                                     <List.Item.Meta
                                         title={<a href={true} onClick={() => { setDetailGame(item.gameid); setCurrentPage('detail') }}>{item.title}</a>}
-                                        description={<Typography.Text ellipsis={{ rows: 2, expandable: false, symbol: 'more' }}>{item.description}</Typography.Text>}
                                     />
                                     <Typography.Paragraph ellipsis={{ rows: 5, expandable: false, symbol: 'more' }}>{item.content}</Typography.Paragraph>
                                 </List.Item>
@@ -258,16 +248,16 @@ function Home({ currentPage, setCurrentPage, user, setSearchResult, setSearchKey
                                         options={[
                                             { value: 'nongame', label: 'Non-Game' },
                                             { value: 'indie', label: 'Indie' },
-                                            { value: 'genreisaction', label: 'Action' },
-                                            { value: 'genreisadventure', label: 'Adventure' },
-                                            { value: 'genreiscasual', label: 'Casual' },
-                                            { value: 'genreisstrategy', label: 'Strategy' },
-                                            { value: 'genreisrpg', label: 'RPG' },
-                                            { value: 'genreissimulation', label: 'Simulation' },
-                                            { value: 'genreissports', label: 'Sports' },
-                                            { value: 'genreisracing', label: 'Racing' },
-                                            { value: 'genreisearlyaccess', label: 'Early Access' },
-                                            { value: 'genreisfreetoplay', label: 'Free to Play' },
+                                            { value: 'action', label: 'Action' },
+                                            { value: 'adventure', label: 'Adventure' },
+                                            { value: 'casual', label: 'Casual' },
+                                            { value: 'strategy', label: 'Strategy' },
+                                            { value: 'rpg', label: 'RPG' },
+                                            { value: 'simulation', label: 'Simulation' },
+                                            { value: 'sports', label: 'Sports' },
+                                            { value: 'racing', label: 'Racing' },
+                                            { value: 'earlyaccess', label: 'Early Access' },
+                                            { value: 'freetoplay', label: 'Free to Play' },
                                         ]}
                                     />
                                 </Form.Item>
@@ -286,7 +276,6 @@ function Home({ currentPage, setCurrentPage, user, setSearchResult, setSearchKey
                                     ]}
                                 >
                                     <Select
-                                        mode='multiple'
                                         allowClear
                                         style={{
                                             width: '100%',

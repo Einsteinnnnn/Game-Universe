@@ -243,8 +243,8 @@ def game_reviews_update():
 def recommend():
     def sort_and_classify(data):
         top, bottom = [], []
-        top_indicator = ['very popular!!!', 'popular', 'popular but not so much~']
-        bottom_indicator = ['not popular, but not yet not very popular', 'not popular', 'very not popular']
+        top_indicator = ['Great Hit', 'Growing Fandom', 'Cult Following']
+        bottom_indicator = ['Starving', 'Half Dead', 'Dead Duck']
         for indicator in top_indicator:
             top += [item for item in data if item[4] == indicator]
         for indicator in bottom_indicator:
@@ -268,20 +268,18 @@ def game_add():
     if username != 'admin':
         return {'status': 'error', 'message': 'Permission denied.'}
     post_data = request.get_json()
-    try:
-        name = post_data['name']
-        developer = post_data['developer']
-        publisher = post_data['publisher']
-        genre = post_data['genre']
-        img = post_data['img']
-        os_platforms = post_data['platform'][0]
-        language = ' '.join(post_data['language'])
-        if my_database.add_newgame(name, developer, publisher,  img, genre, os_platforms, language):
-            return {'status': 'ok'}
-        else:
-            return {'status': 'error', 'message': 'Failed to add game.'}
-    except:
-        return {'status': 'error', 'message': 'Invalid request.'}
+    print(post_data)
+    name = post_data['name']
+    developer = post_data['developer']
+    publisher = post_data['publisher']
+    genre = post_data['genre']
+    img = post_data['img']
+    os_platforms = post_data['platform']
+    language = ' '.join(post_data['language'])
+    if my_database.add_newgame(name, developer, publisher,  img, genre, os_platforms, language):
+        return {'status': 'ok'}
+    else:
+        return {'status': 'error', 'message': 'Failed to add game.'}
     
 
 
