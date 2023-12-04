@@ -230,13 +230,13 @@ class MyDatabase:
             DECLARE himage VARCHAR(255);
             DECLARE done INT DEFAULT 0;
             DECLARE topcursor CURSOR FOR 
-                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu, queryname, shortdescrip, headerimage
+                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu, queryname, detaileddescrip, headerimage
                 FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
                 GROUP BY gid
                 ORDER BY nu DESC
                 LIMIT 10;
             DECLARE botcursor CURSOR FOR 
-                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu, queryname, shortdescrip, headerimage 
+                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu, queryname, detaileddescrip, headerimage 
                 FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
                 GROUP BY gid
                 ORDER BY nu ASC
@@ -249,14 +249,14 @@ class MyDatabase:
             CREATE TABLE return_TOP(
                 gameid INT,
                 gamename VARCHAR(255),
-                shortdescrip TEXT,
+                detaileddescrip TEXT,
                 headerimage VARCHAR(255),
                 numUsers_indicator VARCHAR(255)
             );
             CREATE TABLE return_BOT(
                 gameid INT,
                 gamename VARCHAR(255),
-                shortdescrip TEXT,
+                detaileddescrip TEXT,
                 headerimage VARCHAR(255),
                 numUsers_indicator VARCHAR(255)
             );
