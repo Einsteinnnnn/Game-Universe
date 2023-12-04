@@ -266,13 +266,13 @@ class MyDatabase:
                 FETCH topcursor INTO gameid, numUsers, gname, sdescrip, himage;
                 IF counter<=3 THEN
                     INSERT IGNORE INTO return_TOP
-                    VALUES(gameid, gname, sdescrip, himage, "very popular!!!");
+                    VALUES(gameid, gname, sdescrip, himage, "Great Hit");
                 ELSEIF counter<=7 THEN
                     INSERT IGNORE INTO return_TOP
-                    VALUES(gameid, gname, sdescrip, himage, "popular");
+                    VALUES(gameid, gname, sdescrip, himage, "Growing Fandom");
                 ELSEIF counter<=10 THEN
                     INSERT IGNORE INTO return_TOP
-                    VALUES(gameid, gname, sdescrip, himage, "popular but not so much~"); 
+                    VALUES(gameid, gname, sdescrip, himage, "Cult Following"); 
                 END IF;
                 SET counter = counter + 1;
             UNTIL done END REPEAT;
@@ -285,13 +285,13 @@ class MyDatabase:
                 FETCH botcursor INTO gameid, numUsers, gname, sdescrip, himage;
                 IF counter<=3 THEN
                     INSERT IGNORE INTO return_BOT 
-                    VALUES (gameid, gname, sdescrip, himage, "very not popular");
+                    VALUES (gameid, gname, sdescrip, himage, "Dead Duck");
                 ELSEIF counter<=7 THEN
                     INSERT IGNORE INTO return_BOT 
-                    VALUES (gameid, gname, sdescrip, himage, "not popular");
+                    VALUES (gameid, gname, sdescrip, himage, "Half Dead");
                 ELSEIF counter<=10 THEN
                     INSERT IGNORE INTO return_BOT 
-                    VALUES (gameid, gname, sdescrip, himage, "not popular, but not yet not very popular");
+                    VALUES (gameid, gname, sdescrip, himage, "Starving");
                 END IF;
                 SET counter = counter + 1;
             UNTIL done END REPEAT;
@@ -517,8 +517,8 @@ if __name__=="__main__":
     # print(self.get_gameinfo(989898))
     # q = "SELECT * FROM Developer WHERE developername = 'developer for test'"
     # print(self.query(q))
-    # print(db.create_procedure())
-    # print(db.call_procedure())
+    print(db.create_procedure())
+    print(db.call_procedure())
     # print(db.get_gamepub(1))
     # db.valid_dev("queen")
     # db.valid_pub("queen")
@@ -526,9 +526,9 @@ if __name__=="__main__":
     # print(db.query(q))
     # q = "SELECT * FROM Publisher WHERE publishername = 'queen'"
     # print(db.query(q))
-    db.add_newgame("Right eye is for remembering you", "king", "king", "https://th.bing.com/th/id/R.4772001b467b480cd3579e97bafb352f?rik=gj148TFTcf7gtA&riu=http%3a%2f%2fwww.hdwallpaper.nu%2fwp-content%2fuploads%2f2015%2f02%2fFunny-Cat-Hidden.jpg&ehk=U6Cjoa2RqEoCWgZC2srK9CGyrzRrc1MX%2fh9lzuae7K0%3d&risl=&pid=ImgRaw&r=0", "casual", "windows", "Chinese")
-    print(db.get_gameinfo(989900))
-    print(db.get_gamedev(989900))
-    print(db.get_gamepub(989900))
+    # db.add_newgame("Right eye is for remembering you", "king", "king", "https://th.bing.com/th/id/R.4772001b467b480cd3579e97bafb352f?rik=gj148TFTcf7gtA&riu=http%3a%2f%2fwww.hdwallpaper.nu%2fwp-content%2fuploads%2f2015%2f02%2fFunny-Cat-Hidden.jpg&ehk=U6Cjoa2RqEoCWgZC2srK9CGyrzRrc1MX%2fh9lzuae7K0%3d&risl=&pid=ImgRaw&r=0", "casual", "windows", "Chinese")
+    # print(db.get_gameinfo(989900))
+    # print(db.get_gamedev(989900))
+    # print(db.get_gamepub(989900))
     
     
