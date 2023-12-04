@@ -212,84 +212,105 @@ class MyDatabase:
 
     def call_procedure(self):
         q = "CALL Return_TOP_and_BOT_10"
-        result = self.query(q)
-        return result
+        self.execute(q)
+        q = "SELECT * FROM return_TOP UNION SELECT * FROM return_BOT"
+        return self.query(q)
 
     def create_procedure(self):
         p = "DROP PROCEDURE IF EXISTS Return_TOP_and_BOT_10"
         self.execute(p)
         p_10 = """
-        
         CREATE PROCEDURE Return_TOP_and_BOT_10()
         BEGIN
-            -- 声明变量
             DECLARE gameid INT;
             DECLARE numUsers INT;
-            DECLARE averageTOP DOUBLE;
-            DECLARE averageBOT DOUBLE;
+            DECLARE counter INT;
+            DECLARE gname VARCHAR(255);
+            DECLARE sdescrip TEXT;
+            DECLARE himage VARCHAR(255);
             DECLARE done INT DEFAULT 0;
-
-            -- 声明游标和异常处理器
-            DECLARE TOPcursor CURSOR FOR SELECT gid, nu FROM TopGames;
-            DECLARE BOTcursor CURSOR FOR SELECT gid, nu FROM BotGames;
-            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
-
-            -- 创建或删除临时表
-            DROP TABLE IF EXISTS TopGames, BotGames, return_TOP, return_BOT;
-
-            CREATE TABLE TopGames AS
-                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu 
+            DECLARE topcursor CURSOR FOR 
+                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu, queryname, shortdescrip, headerimage
                 FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
                 GROUP BY gid
                 ORDER BY nu DESC
                 LIMIT 10;
-
-            CREATE TABLE BotGames AS
-                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu 
+            DECLARE botcursor CURSOR FOR 
+                SELECT Userfavorite.gameid AS gid, COUNT(DISTINCT userid) AS nu, queryname, shortdescrip, headerimage 
                 FROM Userfavorite JOIN Gameinfo ON Userfavorite.gameid = Gameinfo.queryid 
                 GROUP BY gid
                 ORDER BY nu ASC
                 LIMIT 10;
+            DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = 1;
 
-            SET averageTOP = (SELECT AVG(TopGames.nu) FROM TopGames);
-            SET averageBOT = (SELECT AVG(BotGames.nu) FROM BotGames);
+            DROP TABLE IF EXISTS return_TOP, return_BOT;
+            SET counter=1;
 
             CREATE TABLE return_TOP(
-                top_id INT,
+                gameid INT,
+                gamename VARCHAR(255),
+                shortdescrip TEXT,
+                headerimage VARCHAR(255),
                 numUsers_indicator VARCHAR(255)
             );
             CREATE TABLE return_BOT(
-                bot_id INT,
+                gameid INT,
+                gamename VARCHAR(255),
+                shortdescrip TEXT,
+                headerimage VARCHAR(255),
                 numUsers_indicator VARCHAR(255)
             );
-            -- 处理 TOP 游标
-            OPEN TOPcursor;
+
+            OPEN topcursor;
             REPEAT
-                FETCH TOPcursor INTO gameid, numUsers;
-                INSERT INTO return_TOP VALUES (1, "1");
+                FETCH topcursor INTO gameid, numUsers, gname, sdescrip, himage;
+                IF counter<=3 THEN
+                    INSERT IGNORE INTO return_TOP
+                    VALUES(gameid, gname, sdescrip, himage, "very popular!!!");
+                ELSEIF counter<=7 THEN
+                    INSERT IGNORE INTO return_TOP
+                    VALUES(gameid, gname, sdescrip, himage, "popular");
+                ELSEIF counter<=10 THEN
+                    INSERT IGNORE INTO return_TOP
+                    VALUES(gameid, gname, sdescrip, himage, "popular but not so much~"); 
+                END IF;
+                SET counter = counter + 1;
             UNTIL done END REPEAT;
             CLOSE TOPcursor;
 
-            -- 重置 done 标志
             SET done = 0;
-
-            -- 处理 BOT 游标
-            OPEN BOTcursor;
+            SET counter =1;
+            OPEN botcursor;
             REPEAT
-                FETCH BOTcursor INTO gameid, numUsers;
-                IF numUsers < averageBOT THEN
-                    INSERT IGNORE INTO return_BOT VALUES (gameid, "very not popular");
-                ELSEIF numUsers = averageBOT THEN
-                    INSERT IGNORE INTO return_BOT VALUES (gameid, "not popular");
-                ELSE
-                    INSERT IGNORE INTO return_BOT VALUES (gameid, "not popular, but not yet not very popular");
+                FETCH botcursor INTO gameid, numUsers, gname, sdescrip, himage;
+                IF counter<=3 THEN
+                    INSERT IGNORE INTO return_BOT 
+                    VALUES (gameid, gname, sdescrip, himage, "very not popular");
+                ELSEIF counter<=7 THEN
+                    INSERT IGNORE INTO return_BOT 
+                    VALUES (gameid, gname, sdescrip, himage, "not popular");
+                ELSEIF counter<=10 THEN
+                    INSERT IGNORE INTO return_BOT 
+                    VALUES (gameid, gname, sdescrip, himage, "not popular, but not yet not very popular");
                 END IF;
+                SET counter = counter + 1;
             UNTIL done END REPEAT;
-            CLOSE BOTcursor;
+            CLOSE botcursor;
         END;
         """
         return self.execute(p_10)
 
+    def drop_triggers(self):
+        q_di = "DROP TRIGGER IF EXISTS Develop_Insert"
+        q_du = "DROP TRIGGER IF EXISTS Develop_Update"
+        q_dd = "DROP TRIGGER IF EXISTS Develop_Delete"
+        q_pi = "DROP TRIGGER IF EXISTS Publish_Insert"
+        q_pu = "DROP TRIGGER IF EXISTS Publish_Update"
+        q_pd = "DROP TRIGGER IF EXISTS Publish_Delete"
+        q_gu = "DROP TRIGGER IF EXISTS Gameinfo_update"
+        return self.execute(q_di) and self.execute(q_du) and self.execute(q_dd) and self.execute(q_pi) and self.execute(q_pu) and self.execute(q_pd) and self.execute(q_gu)
+
+    
     def create_trigger(self):
         q_di = """
         CREATE TRIGGER Develop_Insert
