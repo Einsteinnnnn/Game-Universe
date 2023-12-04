@@ -200,6 +200,7 @@ def game_reviews_add():
     try:
         gameid = post_data['gameid']
         review = post_data['review']
+        review = review.replace("'", "''")
     except:
         return {'status': 'error', 'message': 'Invalid request.'}
     if my_database.add_review(uid, gameid, review):
