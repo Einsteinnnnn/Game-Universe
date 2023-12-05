@@ -10,7 +10,7 @@ const allConfig = {
         enableMock: false,
     },
     prod: {
-        backendUrl: 'http://gameuniverse.site/api',
+        backendUrl: 'https://gameuniverse.site/api',
         enableMock: false,
     },
 }
