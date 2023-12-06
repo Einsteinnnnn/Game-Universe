@@ -74,9 +74,7 @@ function Search({ currentPage, setCurrentPage, user, searchResult, setSearchResu
                                                 { value: 'rpg', label: 'RPG' },
                                                 { value: 'simulation', label: 'Simulation' },
                                                 { value: 'sports', label: 'Sports' },
-                                                { value: 'racing', label: 'Racing' },
-                                                { value: 'earlyaccess', label: 'Early Access' },
-                                                { value: 'freetoplay', label: 'Free to Play' },
+                                                { value: 'racing', label: 'Racing' }
                                             ]}
                                         />
                                     </Form.Item>
